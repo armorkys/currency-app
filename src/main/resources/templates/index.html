@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Currency List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+<div class="container">
+    <h1>Currency Rates</h1>
+    <a th:href="@{/}" class="btn btn-primary">Home</a>
+    <a th:href="@{/convertCurrency}" class="btn btn-secondary">Convert Currency</a>
+  <br><br>
+    <table class="table table-sm table-hover">
+        <thead>
+        <tr>
+            <th scope="col">Currency Type</th>
+            <th scope="col">Value to EUR</th>
+            <th scope="col">Rate History</th>
+        </tr>
+        <tr th:each="el: ${currencyList}">
+            <td th:text="${el.ccyAmt[1].ccy}"></td>
+            <td th:text="${el.ccyAmt[1].amt} + ' : ' + ${el.ccyAmt[0].amt}"></td>
+            <td>
+                <a th:href="@{/getCurrencyHistory/{ccy}(ccy=${el.ccyAmt[1].ccy})}" class="btn btn-secondary">Get
+                    History</a>
+            </td>
+        </tr>
+        </thead>
+    </table>
+</div>
+</body>
+</html>
