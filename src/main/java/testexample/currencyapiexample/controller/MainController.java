@@ -85,7 +85,7 @@ public class MainController {
             model.addAttribute("ccyComparatorAns", new CcyComparator());
         } else {
             model.addAttribute("answerActive", Boolean.TRUE);
-            model.addAttribute("ccyComparatorAns", service.compareCcyRate(currencyComparator));
+            model.addAttribute("ccyComparatorAns", service.getComparatorValuesForCcy(currencyComparator));
         }
         model.addAttribute("currencyNameList", service.getCurrentCurrencyRates().getFxRate());
         model.addAttribute("ccyComparator", new CcyComparator());

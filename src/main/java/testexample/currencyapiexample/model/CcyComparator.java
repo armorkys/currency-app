@@ -19,6 +19,7 @@ public class CcyComparator {
     @DecimalMin(value = "0", inclusive = false, message = "Must be more than 0")
     @NotNull(message = "Must not be null")
     private BigDecimal amount;
+    private BigDecimal ratio;
 
     public CcyComparator(CcyAmtHandling currency1, CcyAmtHandling currency2) {
         this.currency1 = currency1;
@@ -26,6 +27,14 @@ public class CcyComparator {
     }
 
     public CcyComparator() {
+    }
+
+    public BigDecimal getRatio() {
+        return ratio;
+    }
+
+    public void setRatio(BigDecimal ratio) {
+        this.ratio = ratio;
     }
 
     public CcyAmtHandling getCurrency1() {

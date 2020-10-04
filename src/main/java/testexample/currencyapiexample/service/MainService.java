@@ -3,6 +3,7 @@ package testexample.currencyapiexample.service;
 import lt.lb.webservices.fxrates.*;
 import org.assertj.core.util.VisibleForTesting;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import testexample.currencyapiexample.model.CcyComparator;
@@ -19,9 +20,9 @@ import java.time.LocalDate;
 public class MainService {
 
     @VisibleForTesting
-    static final String URL_MAIN = "http://www.lb.lt/webservices/FxRates/FxRates.asmx/";
+    public static final String URL_MAIN = "http://www.lb.lt/webservices/FxRates/FxRates.asmx/";
     static final String URL_CURRENCY_HISTORY = "getFxRatesForCurrency?tp=EU&ccy={ccy}&dtFrom={startDate}&dtTo={endDate}";
-    static final String URL_CURRENCY_CURRENT = "getCurrentFxRates?tp=EU";
+    public static final String URL_CURRENCY_CURRENT = "getCurrentFxRates?tp=EU";
 
     @Autowired
     CurrencyRatesHandlerRepository dbRepository;
@@ -111,10 +112,16 @@ public class MainService {
             startDate = minimumDate;
         if(endDate.isBefore(minimumDate))
             endDate = minimumDate;
-        return restTemplate.getForObject(URL_MAIN + URL_CURRENCY_HISTORY, FxRatesHandling.class, ccy, startDate, endDate);
+
+
+        ResponseEntity<FxRatesHandling> returnEntity = restTemplate.getForEntity(URL_MAIN + URL_CURRENCY_HISTORY, FxRatesHandling.class, ccy, startDate, endDate);
+        return returnEntity.getBody();
+
+
+        //return restTemplate.getForObject(URL_MAIN + URL_CURRENCY_HISTORY, FxRatesHandling.class, ccy, startDate, endDate);
     }
 
-    public CcyComparator compareCcyRate(CcyComparator currencyComparator){
+    public CcyComparator getComparatorValuesForCcy(CcyComparator currencyComparator){
         setValueToCcyAmtHandling(currencyComparator.getCurrency1().getCcy(),
                 currencyComparator.getCurrency1());
         setValueToCcyAmtHandling(currencyComparator.getCurrency2().getCcy(),
@@ -133,10 +140,10 @@ public class MainService {
         }
     }
 
-    private CcyComparator calculateRate(CcyComparator currencyComparator) {
-
+    private CcyComparator calculateRate(CcyComparator currencyComparator) { ;
         BigDecimal val1 = currencyComparator.getCurrency1().getAmt();
         BigDecimal val2 = currencyComparator.getCurrency2().getAmt();
+        currencyComparator.setRatio(val1);
 
         val2 = val2.divide(val1, 6, RoundingMode.CEILING);
         val1 = val1.divide(val1, 6, RoundingMode.CEILING);

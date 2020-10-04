@@ -26,7 +26,6 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
-import static testexample.currencyapiexample.service.MainService.URL_CURRENCY_HISTORY;
 import static testexample.currencyapiexample.service.MainService.URL_MAIN;
 
 @SpringBootTest
@@ -76,9 +75,6 @@ class MainServiceTest {
     }
 
 
-
-
-
     @Test
     public void whenHistoricalRatesQueried_LBReturns500_ListOfFxRatesIsEmpty() throws DatatypeConfigurationException, JsonProcessingException {
         RestTemplate restTemplate = mainService.restTemplate;
@@ -92,6 +88,13 @@ class MainServiceTest {
         errorCode.setPrtry("500");
         error.setErr(errorCode);
         expectedFxRates.setOprlErr(error);
+
+        FxRateHandling fxRate = addDataToFxRateHandling(
+                "2020-01-01",
+                FxRateTypeHandling.EU
+        );
+
+        expectedFxRates.getFxRate().add(fxRate);
 
         String expectedReturnBody = xmlMapper.writeValueAsString(expectedFxRates);
 
@@ -108,4 +111,7 @@ class MainServiceTest {
         assertThat(actualFxRates.getFxRate()).isEmpty();
         assertThat(actualFxRates.getOprlErr()).isEqualTo(expectedFxRates.getOprlErr());
     }
+
+
+
 }
