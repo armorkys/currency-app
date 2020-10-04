@@ -16,11 +16,7 @@ public class DbUpdateTask extends QuartzJobBean {
     private MainService mainService;
 
     @Override
-    protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        try {
-            mainService.updateDB();
-        } catch (DatatypeConfigurationException e) {
-            e.printStackTrace();
-        }
+    protected void executeInternal(JobExecutionContext context){
+        mainService.updateDB();
     }
 }
