@@ -19,9 +19,9 @@ import java.time.LocalDate;
 public class MainService {
 
     @VisibleForTesting
-    static final String URL_MAIN = "http://www.lb.lt";
-    static final String URL_CURRENCY_HISTORY = "/webservices/FxRates/FxRates.asmx/getFxRatesForCurrency?tp=EU&ccy={ccy}&dtFrom={startDate}&dtTo={endDate}";
-    static final String URL_CURRENCY_CURRENT = "/webservices/FxRates/FxRates.asmx/getCurrentFxRates?tp=EU";
+    static final String URL_MAIN = "http://www.lb.lt/webservices/FxRates/FxRates.asmx/";
+    static final String URL_CURRENCY_HISTORY = "getFxRatesForCurrency?tp=EU&ccy={ccy}&dtFrom={startDate}&dtTo={endDate}";
+    static final String URL_CURRENCY_CURRENT = "getCurrentFxRates?tp=EU";
 
     @Autowired
     CurrencyRatesHandlerRepository dbRepository;
@@ -60,49 +60,49 @@ public class MainService {
     }
 
     private void giveDataToDatabase(FxRatesHandling ans) {
-        for (FxRateHandling fxRateHandling : ans.getFxRate()) {
+        for (FxRateHandling fxRate : ans.getFxRate()) {
             dbRepository.save(
-                    convertFxRateHandlingToCurrencyRatesHandler(fxRateHandling)
+                    convertFxRateHandlingToCurrencyRatesHandler(fxRate)
             );
         }
     }
 
     //Converting values for db, BigDecimal remains as it is, others converted to string
-    private CurrencyRatesHandler convertFxRateHandlingToCurrencyRatesHandler(FxRateHandling fxRateHandling) {
+    private CurrencyRatesHandler convertFxRateHandlingToCurrencyRatesHandler(FxRateHandling fxRate) {
         return new CurrencyRatesHandler(
-                fxRateHandling.getCcyAmt().get(1).getCcy().toString(),
-                fxRateHandling.getCcyAmt().get(1).getAmt(),
-                LocalDate.of(fxRateHandling.getDt().getYear(), fxRateHandling.getDt().getMonth(), fxRateHandling.getDt().getDay()),
-                fxRateHandling.getTp().toString()
+                fxRate.getCcyAmt().get(1).getCcy().toString(),
+                fxRate.getCcyAmt().get(1).getAmt(),
+                LocalDate.of(fxRate.getDt().getYear(), fxRate.getDt().getMonth(), fxRate.getDt().getDay()),
+                fxRate.getTp().toString()
         );
     }
 
     private FxRatesHandling loadFromDB() throws DatatypeConfigurationException {
         Iterable<CurrencyRatesHandler> iterableList = dbRepository.findAll();
-        FxRatesHandling fxRatesHandling = new FxRatesHandling();
-        for (CurrencyRatesHandler currencyRatesHandler : iterableList) {
-            fxRatesHandling.getFxRate().add(convertCurrencyRatesHandlerToFxRateHandler(currencyRatesHandler));
+        FxRatesHandling fxRates = new FxRatesHandling();
+        for (CurrencyRatesHandler currencyRates : iterableList) {
+            fxRates.getFxRate().add(convertCurrencyRatesHandlerToFxRateHandler(currencyRates));
         }
-        return fxRatesHandling;
+        return fxRates;
     }
 
     //converting values from db to main object handlers
-    private FxRateHandling convertCurrencyRatesHandlerToFxRateHandler(CurrencyRatesHandler currencyRatesHandler) throws DatatypeConfigurationException {
-        FxRateHandling tempHandle = new FxRateHandling();
+    private FxRateHandling convertCurrencyRatesHandlerToFxRateHandler(CurrencyRatesHandler currencyRates) throws DatatypeConfigurationException {
+        FxRateHandling fxRate = new FxRateHandling();
         //Because 1st CcyAmtHandling is always EUR with value of 1
         CcyAmtHandling temp1 = new CcyAmtHandling();
         temp1.setCcy(CcyISO4217.valueOf("EUR"));
         temp1.setAmt(new BigDecimal("1"));
         //Values from DB to 2nd CcyAmtHandling
         CcyAmtHandling temp2 = new CcyAmtHandling();
-        temp2.setCcy(CcyISO4217.valueOf(currencyRatesHandler.getCcy()));
-        temp2.setAmt(currencyRatesHandler.getAmt());
+        temp2.setCcy(CcyISO4217.valueOf(currencyRates.getCcy()));
+        temp2.setAmt(currencyRates.getAmt());
         //adding other values
-        tempHandle.getCcyAmt().add(temp1);
-        tempHandle.getCcyAmt().add(temp2);
-        tempHandle.setTp(FxRateTypeHandling.valueOf(currencyRatesHandler.getTp()));
-        tempHandle.setDt(DatatypeFactory.newInstance().newXMLGregorianCalendar(currencyRatesHandler.getDt().toString()));
-        return tempHandle;
+        fxRate.getCcyAmt().add(temp1);
+        fxRate.getCcyAmt().add(temp2);
+        fxRate.setTp(FxRateTypeHandling.valueOf(currencyRates.getTp()));
+        fxRate.setDt(DatatypeFactory.newInstance().newXMLGregorianCalendar(currencyRates.getDt().toString()));
+        return fxRate;
     }
 
     public FxRatesHandling getCurrencyHistory(CcyISO4217 ccy, LocalDate startDate, LocalDate endDate) {
@@ -114,40 +114,40 @@ public class MainService {
         return restTemplate.getForObject(URL_MAIN + URL_CURRENCY_HISTORY, FxRatesHandling.class, ccy, startDate, endDate);
     }
 
-    public CcyComparator compareCcyRate(CcyComparator comparatorRes){
-        setValueToCcyAmtHandling(comparatorRes.getCurrency1().getCcy(),
-                comparatorRes.getCurrency1());
-        setValueToCcyAmtHandling(comparatorRes.getCurrency2().getCcy(),
-                comparatorRes.getCurrency2());
-        return calculateRate(comparatorRes);
+    public CcyComparator compareCcyRate(CcyComparator currencyComparator){
+        setValueToCcyAmtHandling(currencyComparator.getCurrency1().getCcy(),
+                currencyComparator.getCurrency1());
+        setValueToCcyAmtHandling(currencyComparator.getCurrency2().getCcy(),
+                currencyComparator.getCurrency2());
+        return calculateRate(currencyComparator);
     }
 
-    private void setValueToCcyAmtHandling(CcyISO4217 ccy, CcyAmtHandling ccyAmtHandling) {
+    private void setValueToCcyAmtHandling(CcyISO4217 ccy, CcyAmtHandling ccyAmt) {
         if (ccy == CcyISO4217.EUR) {
-            ccyAmtHandling.setCcy(ccy);
-            ccyAmtHandling.setAmt(new BigDecimal("1"));
+            ccyAmt.setCcy(ccy);
+            ccyAmt.setAmt(new BigDecimal("1"));
         } else {
             CurrencyRatesHandler currencyRatesHandler = dbRepository.findByCcy(ccy.toString());
-            ccyAmtHandling.setAmt(currencyRatesHandler.getAmt());
-            ccyAmtHandling.setCcy(ccy);
+            ccyAmt.setAmt(currencyRatesHandler.getAmt());
+            ccyAmt.setCcy(ccy);
         }
     }
 
-    private CcyComparator calculateRate(CcyComparator comparator) {
+    private CcyComparator calculateRate(CcyComparator currencyComparator) {
 
-        BigDecimal val1 = comparator.getCurrency1().getAmt();
-        BigDecimal val2 = comparator.getCurrency2().getAmt();
+        BigDecimal val1 = currencyComparator.getCurrency1().getAmt();
+        BigDecimal val2 = currencyComparator.getCurrency2().getAmt();
 
         val2 = val2.divide(val1, 6, RoundingMode.CEILING);
         val1 = val1.divide(val1, 6, RoundingMode.CEILING);
 
-        val1 = val1.multiply(comparator.getAmount());
-        val2 = val2.multiply(comparator.getAmount());
+        val1 = val1.multiply(currencyComparator.getAmount());
+        val2 = val2.multiply(currencyComparator.getAmount());
 
-        comparator.getCurrency1().setAmt(val1);
-        comparator.getCurrency2().setAmt(val2);
+        currencyComparator.getCurrency1().setAmt(val1);
+        currencyComparator.getCurrency2().setAmt(val2);
 
-        return comparator;
+        return currencyComparator;
     }
 
 }
