@@ -1,9 +1,7 @@
 package testexample.currencyapiexample.controller;
 
-
 import lt.lb.webservices.fxrates.CcyISO4217;
 import lt.lb.webservices.fxrates.FxRatesHandling;
-import lt.lb.webservices.fxrates.FxRateHandling;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -85,11 +83,9 @@ public class MainController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("answerActive", Boolean.FALSE);
             model.addAttribute("ccyComparatorAns", new CcyComparator());
-
         } else {
             model.addAttribute("answerActive", Boolean.TRUE);
             model.addAttribute("ccyComparatorAns", service.compareCcyRate(compareHandler));
-
         }
         model.addAttribute("currencyNameList", service.getCurrentCurrencyRates().getFxRate());
         model.addAttribute("ccyComparator", new CcyComparator());
