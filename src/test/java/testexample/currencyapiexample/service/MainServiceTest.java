@@ -53,7 +53,7 @@ class MainServiceTest {
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess(expectedReturnBody, MediaType.APPLICATION_XML));
 
-        FxRatesHandling actualFxRates = mainService.getCurrencyHistoryBase(ccy, startDate, endDate);
+        FxRatesHandling actualFxRates = mainService.getCurrencyHistory(ccy, startDate, endDate);
 
         server.verify();
         assertThat(actualFxRates.getFxRate()).hasSize(1);
@@ -88,7 +88,7 @@ class MainServiceTest {
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withServerError().body(expectedReturnBody));
 
-        FxRatesHandling actualFxRates = mainService.getCurrencyHistoryBase(ccy, startDate, endDate);
+        FxRatesHandling actualFxRates = mainService.getCurrencyHistory(ccy, startDate, endDate);
 
         server.verify();
         assertThat(actualFxRates.getFxRate()).isEmpty();

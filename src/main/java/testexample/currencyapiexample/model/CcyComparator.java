@@ -15,8 +15,6 @@ public class CcyComparator {
     @NotNull(message = "Must not be null")
     private CcyAmtHandling currency2;
 
-    private boolean isActive;
-
     @Digits(integer = 20, fraction = 2)
     @DecimalMin(value = "0", inclusive = false, message = "Must be more than 0")
     @NotNull(message = "Must not be null")
@@ -25,11 +23,9 @@ public class CcyComparator {
     public CcyComparator(CcyAmtHandling currency1, CcyAmtHandling currency2) {
         this.currency1 = currency1;
         this.currency2 = currency2;
-        this.isActive = false;
     }
 
     public CcyComparator() {
-        this.isActive = false;
     }
 
     public CcyAmtHandling getCurrency1() {
@@ -48,18 +44,6 @@ public class CcyComparator {
         this.currency2 = currency2;
     }
 
-    @Override
-    public String toString() {
-        return "CompareCurrency{" +
-                "currency 1=" + currency1 +
-                ", currency 2=" + currency2 +
-                '}';
-    }
-
-    public boolean getActive() {
-        return this.isActive;
-    }
-
     public BigDecimal getAmount() {
         return amount;
     }
@@ -68,12 +52,13 @@ public class CcyComparator {
         this.amount = amount;
     }
 
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
+    @Override
+    public String toString() {
+        return "CcyComparator{" +
+                "currency1=" + currency1 +
+                ", currency2=" + currency2 +
+                ", amount=" + amount +
+                '}';
     }
 
     @Override
@@ -81,14 +66,13 @@ public class CcyComparator {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CcyComparator that = (CcyComparator) o;
-        return isActive == that.isActive &&
-                Objects.equals(currency1, that.currency1) &&
+        return Objects.equals(currency1, that.currency1) &&
                 Objects.equals(currency2, that.currency2) &&
                 Objects.equals(amount, that.amount);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(currency1, currency2, isActive, amount);
+        return Objects.hash(currency1, currency2, amount);
     }
 }

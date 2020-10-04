@@ -105,7 +105,12 @@ public class MainService {
         return tempHandle;
     }
 
-    public FxRatesHandling getCurrencyHistoryBase(CcyISO4217 ccy, LocalDate startDate, LocalDate endDate) {
+    public FxRatesHandling getCurrencyHistory(CcyISO4217 ccy, LocalDate startDate, LocalDate endDate) {
+        LocalDate minimumDate = LocalDate.parse("2014-09-30");
+        if(startDate.isBefore(minimumDate))
+            startDate = minimumDate;
+        if(endDate.isBefore(minimumDate))
+            endDate = minimumDate;
         return restTemplate.getForObject(URL_MAIN + URL_CURRENCY_HISTORY, FxRatesHandling.class, ccy, startDate, endDate);
     }
 

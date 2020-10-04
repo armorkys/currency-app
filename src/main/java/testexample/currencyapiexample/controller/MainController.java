@@ -39,7 +39,7 @@ public class MainController {
                                      Model model) {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusYears(1);
-        FxRatesHandling historyList = service.getCurrencyHistoryBase(ccy, startDate, endDate);
+        FxRatesHandling historyList = service.getCurrencyHistory(ccy, startDate, endDate);
         DateHistoryTemplate formTemplate = new DateHistoryTemplate();
         formTemplate.setCcy(ccy);
         model.addAttribute("dateInputTemplate", formTemplate);
@@ -55,10 +55,10 @@ public class MainController {
         if (bindingResult.hasErrors()) {
             LocalDate endDate = LocalDate.now();
             LocalDate startDate = endDate.minusYears(1);
-            FxRatesHandling historyList = service.getCurrencyHistoryBase(ccy, startDate, endDate);
+            FxRatesHandling historyList = service.getCurrencyHistory(ccy, startDate, endDate);
             model.addAttribute("currencyRatesList", historyList.getFxRate());
         } else {
-            FxRatesHandling historyList = service.getCurrencyHistoryBase(formTemplate.getCcy(),
+            FxRatesHandling historyList = service.getCurrencyHistory(formTemplate.getCcy(),
                     formTemplate.getStartDate(),
                     formTemplate.getEndDate());
             model.addAttribute("currencyRatesList", historyList.getFxRate());
