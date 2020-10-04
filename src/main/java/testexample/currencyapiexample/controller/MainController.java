@@ -3,7 +3,7 @@ package testexample.currencyapiexample.controller;
 
 import lt.lb.webservices.fxrates.CcyISO4217;
 import lt.lb.webservices.fxrates.FxRatesHandling;
-
+import lt.lb.webservices.fxrates.FxRateHandling;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,10 +19,7 @@ import testexample.currencyapiexample.service.MainService;
 
 import javax.validation.Valid;
 import javax.xml.datatype.DatatypeConfigurationException;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
 
 @Controller
 public class MainController {
@@ -44,7 +41,7 @@ public class MainController {
                                      Model model) {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusYears(1);
-        FxRatesHandling historyList = service.getCurrencyHistoryBase(ccy.toString(), startDate.toString(), endDate.toString());
+        FxRatesHandling historyList = service.getCurrencyHistoryBase(ccy, startDate, endDate);
         DateHistoryTemplate formTemplate = new DateHistoryTemplate();
         formTemplate.setCcy(ccy);
         model.addAttribute("dateInputTemplate", formTemplate);
@@ -60,12 +57,12 @@ public class MainController {
         if (bindingResult.hasErrors()) {
             LocalDate endDate = LocalDate.now();
             LocalDate startDate = endDate.minusYears(1);
-            lt.lb.webservices.fxrates.FxRatesHandling historyList = service.getCurrencyHistoryBase(ccy.toString(), startDate.toString(), endDate.toString());
+            FxRatesHandling historyList = service.getCurrencyHistoryBase(ccy, startDate, endDate);
             model.addAttribute("currencyRatesList", historyList.getFxRate());
         } else {
-            FxRatesHandling historyList = service.getCurrencyHistoryBase(formTemplate.getCcy().toString(),
-                    formTemplate.getStartDate().toString(),
-                    formTemplate.getEndDate().toString());
+            FxRatesHandling historyList = service.getCurrencyHistoryBase(formTemplate.getCcy(),
+                    formTemplate.getStartDate(),
+                    formTemplate.getEndDate());
             model.addAttribute("currencyRatesList", historyList.getFxRate());
         }
         model.addAttribute("dateInputTemplate", formTemplate);
@@ -99,12 +96,4 @@ public class MainController {
         return "convert-currency";
     }
 
-
-    private LocalDate convertToLocalDate(Date date) {
-        LocalDate fixedDate = Instant.ofEpochMilli(date.getTime())
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-
-        return fixedDate;
-    }
 }

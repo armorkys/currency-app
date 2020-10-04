@@ -25,11 +25,11 @@
                     <input type="date" th:field="*{startDate}" placeholder="Start Date">
                     <p th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}">Bad Input</p>
                 </div>
-                    <div>
-                        <label>End date</label>
-                        <input type="date" th:field="*{endDate}" placeholder="End Date">
-                        <p th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}">Bad Input</p>
-                    </div>
+                <div>
+                    <label>End date</label>
+                    <input type="date" th:field="*{endDate}" placeholder="End Date">
+                    <p th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}">Bad Input</p>
+                </div>
 
 
                 <button type="submit" class="btn btn-secondary">Custom Timeframe</button>

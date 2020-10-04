@@ -1,12 +1,8 @@
 package testexample.currencyapiexample.model;
 
-import org.apache.tomcat.jni.Local;
-
 import javax.persistence.*;
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Objects;
 
 @Entity

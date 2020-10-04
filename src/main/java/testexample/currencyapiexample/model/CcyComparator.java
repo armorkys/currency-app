@@ -2,7 +2,9 @@ package testexample.currencyapiexample.model;
 
 import lt.lb.webservices.fxrates.CcyAmtHandling;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -20,17 +22,14 @@ public class CcyComparator {
     @NotNull(message = "Must not be null")
     private BigDecimal amount;
 
-
-
-
     public CcyComparator(CcyAmtHandling currency1, CcyAmtHandling currency2) {
         this.currency1 = currency1;
         this.currency2 = currency2;
-        this.isActive=false;
+        this.isActive = false;
     }
 
     public CcyComparator() {
-        this.isActive=false;
+        this.isActive = false;
     }
 
     public CcyAmtHandling getCurrency1() {
@@ -61,10 +60,6 @@ public class CcyComparator {
         return this.isActive;
     }
 
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
     public BigDecimal getAmount() {
         return amount;
     }
@@ -75,6 +70,10 @@ public class CcyComparator {
 
     public boolean isActive() {
         return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 
     @Override

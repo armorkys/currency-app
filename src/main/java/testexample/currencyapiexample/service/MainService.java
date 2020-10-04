@@ -14,13 +14,14 @@ import javax.xml.datatype.DatatypeFactory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 public class MainService {
 
     @VisibleForTesting
-    static final String URLMAIN = "http://www.lb.lt/webservices/FxRates/FxRates.asmx/";
+    static final String URL_MAIN = "http://www.lb.lt";
+    static final String URL_FXRATES_CURRENCY_HISTORY = "/webservices/FxRates/FxRates.asmx/getFxRatesForCurrency?tp=EU&ccy={ccy}&dtFrom={startDate}&dtTo={endDate}";
+    static final String URL_FXRATES_CURRENCY_CURRENT = "/webservices/FxRates/FxRates.asmx/getCurrentFxRates?tp=EU";
 
     @Autowired
     CurrencyRatesHandlerRepository dbRepository;
@@ -30,15 +31,15 @@ public class MainService {
     RestTemplate restTemplate;
 
     public FxRatesHandling requestRatesListFromAPI() {
-        return restTemplate.getForObject(URLMAIN + "getCurrentFxRates?tp=EU", FxRatesHandling.class);
+        return restTemplate.getForObject(URL_MAIN + URL_FXRATES_CURRENCY_CURRENT, FxRatesHandling.class);
     }
 
     public void updateDB() throws DatatypeConfigurationException {
         FxRatesHandling fxRates = requestRatesListFromAPI();
-        if(fxRates.getFxRate().iterator().hasNext()) {
+        if (fxRates.getFxRate().iterator().hasNext()) {
             dbRepository.deleteAll();
             giveDataToDatabase(fxRates);
-         } else if(!fxRates.getFxRate().iterator().hasNext()){
+        } else if (!fxRates.getFxRate().iterator().hasNext()) {
             System.out.println("No valid response from Server ");
         }
     }
@@ -58,8 +59,7 @@ public class MainService {
         return !test.iterator().hasNext();
     }
 
-    private void giveDataToDatabase(FxRatesHandling ans){
-        CurrencyRatesHandler template = new CurrencyRatesHandler();
+    private void giveDataToDatabase(FxRatesHandling ans) {
         //Converting values for db, BigDecimal remains as it is, others converted to string
         for (FxRateHandling handle1 : ans.getFxRate()) {
             dbRepository.save(new CurrencyRatesHandler(
@@ -92,8 +92,8 @@ public class MainService {
         return mainHandle;
     }
 
-    public FxRatesHandling getCurrencyHistoryBase(String ccy, String startDate, String endDate) {
-        return restTemplate.getForObject(URLMAIN + "getFxRatesForCurrency?tp=EU&ccy=" + ccy + "&dtFrom=" + startDate + "&dtTo=" + endDate, FxRatesHandling.class);
+    public FxRatesHandling getCurrencyHistoryBase(CcyISO4217 ccy, LocalDate startDate, LocalDate endDate) {
+        return restTemplate.getForObject(URL_MAIN + URL_FXRATES_CURRENCY_HISTORY, FxRatesHandling.class, ccy, startDate, endDate);
     }
 
     public CcyComparator compareCcyRate(CcyComparator comparatorRes) throws DatatypeConfigurationException {
@@ -104,11 +104,11 @@ public class MainService {
         return calculateRate(comparatorRes);
     }
 
-    private void setValueToCcyAmtHandling(CcyISO4217 ccy, CcyAmtHandling ccyAmtHandling){
-        if(ccy == CcyISO4217.EUR){
+    private void setValueToCcyAmtHandling(CcyISO4217 ccy, CcyAmtHandling ccyAmtHandling) {
+        if (ccy == CcyISO4217.EUR) {
             ccyAmtHandling.setCcy(ccy);
             ccyAmtHandling.setAmt(new BigDecimal("1"));
-        }else {
+        } else {
             CurrencyRatesHandler currencyRatesHandler = dbRepository.findByCcy(ccy.toString());
             ccyAmtHandling.setAmt(currencyRatesHandler.getAmt());
             ccyAmtHandling.setCcy(ccy);

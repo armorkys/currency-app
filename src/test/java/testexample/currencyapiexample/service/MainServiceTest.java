@@ -3,7 +3,6 @@ package testexample.currencyapiexample.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lt.lb.webservices.fxrates.*;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,14 +16,14 @@ import org.springframework.web.client.RestTemplate;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
+import java.time.LocalDate;
+
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
-import static testexample.currencyapiexample.service.MainService.URLMAIN;
+import static testexample.currencyapiexample.service.MainService.URL_MAIN;
 
 @SpringBootTest
 class MainServiceTest {
@@ -46,11 +45,11 @@ class MainServiceTest {
 
         String expectedReturnBody = xmlMapper.writeValueAsString(expectedFxRates);
 
-        String ccy = CcyISO4217.EUR.value();
-        String startDate = "2020-01-01";
-        String endDate = "2020-02-01";
+        CcyISO4217 ccy = CcyISO4217.EUR;
+        LocalDate startDate = LocalDate.parse("2020-01-01");
+        LocalDate endDate = LocalDate.parse("2020-02-01");
 
-        server.expect(ExpectedCount.once(), requestTo(URLMAIN + "getFxRatesForCurrency?tp=EU&ccy=" + ccy + "&dtFrom=" + startDate + "&dtTo=" + endDate))
+        server.expect(ExpectedCount.once(), requestTo(URL_MAIN + "getFxRatesForCurrency?tp=EU&ccy=" + ccy + "&dtFrom=" + startDate + "&dtTo=" + endDate))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess(expectedReturnBody, MediaType.APPLICATION_XML));
 
@@ -81,11 +80,11 @@ class MainServiceTest {
 
         String expectedReturnBody = xmlMapper.writeValueAsString(expectedFxRates);
 
-        String ccy = CcyISO4217.EUR.value();
-        String startDate = "2020-01-01";
-        String endDate = "2020-02-01";
+        CcyISO4217 ccy = CcyISO4217.EUR;
+        LocalDate startDate = LocalDate.parse("2020-01-01");
+        LocalDate endDate = LocalDate.parse("2020-02-01");
 
-        server.expect(ExpectedCount.once(), requestTo(URLMAIN + "getFxRatesForCurrency?tp=EU&ccy=" + ccy + "&dtFrom=" + startDate + "&dtTo=" + endDate))
+        server.expect(ExpectedCount.once(), requestTo(URL_MAIN + "getFxRatesForCurrency?tp=EU&ccy=" + ccy + "&dtFrom=" + startDate + "&dtTo=" + endDate))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withServerError().body(expectedReturnBody));
 
