@@ -7,6 +7,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.Objects;
 
 @Entity
 @Table
@@ -90,5 +91,20 @@ public class CurrencyRatesHandler {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CurrencyRatesHandler that = (CurrencyRatesHandler) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(ccy, that.ccy) &&
+                Objects.equals(amt, that.amt) &&
+                Objects.equals(dt, that.dt) &&
+                Objects.equals(tp, that.tp);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, ccy, amt, dt, tp);
+    }
 }

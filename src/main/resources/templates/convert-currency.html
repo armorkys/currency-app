@@ -3,55 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <title>Currency History</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
-
 <div class="container my-2">
     <h1>Currency Conversion</h1>
     <a th:href="@{/}" class="btn btn-primary">Home</a>
     <a th:href="@{/convertCurrency}" class="btn btn-secondary">Convert Currency</a>
-   <br><br>
+    <br><br>
     <h5>Convert Currency</h5>
     <form action="#" th:action="@{/convertCurrency}" th:object="${ccyComparator}" method="POST">
-<div class="row">
-        <div class="col">
-            <label>Select Currency</label>
-            <select class="form-control" th:field="${ccyComparator.comparable1.ccy}">
-                <option value="">--</option>
-                <option th:utext="${currencyNameList[0].ccyAmt[0].ccy}"
-                        th:value="${currencyNameList[0].ccyAmt[0].ccy}"></option>
-                <option th:each="cur : ${currencyNameList}"
-                        th:value="${cur.ccyAmt[1].ccy}"
-                        th:utext="${cur.ccyAmt[1].ccy}"/>
-            </select>
+        <div class="row">
+            <div class="col">
+                <label>Select Currency</label>
+                <select class="form-control" th:field="${ccyComparator.comparable1.ccy}">
+                    <option value="">--</option>
+                    <option th:utext="${currencyNameList[0].ccyAmt[0].ccy}"
+                            th:value="${currencyNameList[0].ccyAmt[0].ccy}"></option>
+                    <option th:each="cur : ${currencyNameList}"
+                            th:value="${cur.ccyAmt[1].ccy}"
+                            th:utext="${cur.ccyAmt[1].ccy}"/>
+                </select>
+                <div th:if="${#fields.hasErrors('comparable1')}" th:errors="*{comparable1}" class="fieldinvalid">Value 1
+                    Error
+                </div>
+            </div>
+            <div class="col">
+                <label>Select Currency</label>
+                <select class="form-control" th:field="${ccyComparator.comparable2.ccy}">
+                    <option value="">--</option>
+                    <option th:utext="${currencyNameList[0].ccyAmt[0].ccy}"
+                            th:value="${currencyNameList[0].ccyAmt[0].ccy}"></option>
+                    <option th:each="cur : ${currencyNameList}"
+                            th:value="${cur.ccyAmt[1].ccy}"
+                            th:utext="${cur.ccyAmt[1].ccy}"/>
+                </select>
+                <div th:if="${#fields.hasErrors('comparable2')}" th:errors="*{comparable2}" class="fieldinvalid">Value 2
+                    Error
+                </div>
+            </div>
+            <div class="col">
+                <label>Amount</label>
+                <input type="text" th:field="*{conversionAmount}" placeholder="Enter Amount"
+                       class="form-control">
+                <div th:if="${#fields.hasErrors('conversionAmount')}" th:errors="*{conversionAmount}"
+                     class="fieldinvalid">Value 3 error
+                </div>
+            </div>
+            <div class="col">
+                <button type="submit" class="btn btn-secondary btn-sm mb-3">Convert Currency</button>
+            </div>
         </div>
-
-        <div class="col">
-            <label>Select Currency</label>
-            <select class="form-control" th:field="${ccyComparator.comparable2.ccy}">
-                <option value="">--</option>
-                <option th:utext="${currencyNameList[0].ccyAmt[0].ccy}"
-                        th:value="${currencyNameList[0].ccyAmt[0].ccy}"></option>
-                <option th:each="cur : ${currencyNameList}"
-                        th:value="${cur.ccyAmt[1].ccy}"
-                        th:utext="${cur.ccyAmt[1].ccy}"/>
-            </select>
-        </div>
-
-        <div class="col">
-            <label>Multiplier</label>
-            <input type="text" th:field="*{conversionAmount}" placeholder="Enter Multiplier"
-                   class="form-control">
-            <p th:if="*{#fields.hasErrors('conversionAmount')}" th:errors="${conversionAmount}">Bad Input</p>
-        </div>
-<div class="col">
-    <button type="submit" class="btn btn-secondary btn-sm mb-3">Convert Currency</button>
-</div>
-
-</div>
     </form>
-<br>
+    <br>
     <div th:switch="${answerActive}">
         <div th:case="${true}">
             <div class="row">
@@ -66,8 +71,6 @@
             </div>
         </div>
     </div>
-
-
 </div>
 </body>
 </html>

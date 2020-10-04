@@ -1,6 +1,7 @@
 package testexample.currencyapiexample.service;
 
-import models.*;
+import lt.lb.webservices.fxrates.*;
+import org.assertj.core.util.VisibleForTesting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -18,33 +19,35 @@ import java.util.List;
 @Service
 public class MainService {
 
-    private final String URLMAIN = "http://www.lb.lt/webservices/FxRates/FxRates.asmx/";
+    @VisibleForTesting
+    static final String URLMAIN = "http://www.lb.lt/webservices/FxRates/FxRates.asmx/";
 
     @Autowired
     CurrencyRatesHandlerRepository dbRepository;
 
     @Autowired
-    private RestTemplate restTemplate;
+    @VisibleForTesting
+    RestTemplate restTemplate;
 
     public FxRatesHandling requestRatesListFromAPI() {
         return restTemplate.getForObject(URLMAIN + "getCurrentFxRates?tp=EU", FxRatesHandling.class);
     }
 
     public void updateDB() throws DatatypeConfigurationException {
-        FxRatesHandling listHandler = requestRatesListFromAPI();
-        if(listHandler.getFxRate().iterator().hasNext()) {
+        FxRatesHandling fxRates = requestRatesListFromAPI();
+        if(fxRates.getFxRate().iterator().hasNext()) {
             dbRepository.deleteAll();
-            giveDataToDatabase(listHandler);
-         } else if(!listHandler.getFxRate().iterator().hasNext()){
-            System.out.println("No valid response from API ");
+            giveDataToDatabase(fxRates);
+         } else if(!fxRates.getFxRate().iterator().hasNext()){
+            System.out.println("No valid response from Server ");
         }
     }
 
-    public FxRatesHandling getMainList() throws DatatypeConfigurationException {
+    public FxRatesHandling getCurrentCurrencyRates() throws DatatypeConfigurationException {
         if (dbIsEmpty()) {
-            FxRatesHandling listHandler = requestRatesListFromAPI();
-            giveDataToDatabase(listHandler);
-            return listHandler;
+            FxRatesHandling fxRates = requestRatesListFromAPI();
+            giveDataToDatabase(fxRates);
+            return fxRates;
         } else {
             return loadFromDB();
         }
@@ -52,17 +55,12 @@ public class MainService {
 
     private boolean dbIsEmpty() {
         Iterable<CurrencyRatesHandler> test = dbRepository.findAll();
-
-        if (!test.iterator().hasNext()) {
-            return true;
-        } else {
-            return false;
-        }
+        return !test.iterator().hasNext();
     }
 
-    private void giveDataToDatabase(FxRatesHandling ans) throws DatatypeConfigurationException {
+    private void giveDataToDatabase(FxRatesHandling ans){
         CurrencyRatesHandler template = new CurrencyRatesHandler();
-        //Converting values for db, BigDecimal Left as it is, others to string
+        //Converting values for db, BigDecimal remains as it is, others converted to string
         for (FxRateHandling handle1 : ans.getFxRate()) {
             dbRepository.save(new CurrencyRatesHandler(
                     handle1.getCcyAmt().get(1).getCcy().toString(),
@@ -71,7 +69,6 @@ public class MainService {
                     handle1.getTp().toString()
             ));
         }
-        loadFromDB();
     }
 
     private FxRatesHandling loadFromDB() throws DatatypeConfigurationException {
@@ -100,16 +97,18 @@ public class MainService {
     }
 
     public CcyComparator compareCcyRate(CcyComparator comparatorRes) throws DatatypeConfigurationException {
-        CcyISO4217 ccy1 = comparatorRes.getComparable1().getCcy();
-        CcyISO4217 ccy2 = comparatorRes.getComparable2().getCcy();
+        CcyISO4217 cc3;
+        cc3 = comparatorRes.getCurrency1().getCcy();
+        CcyISO4217 ccy1 = comparatorRes.getCurrency1().getCcy();
+        CcyISO4217 ccy2 = comparatorRes.getCurrency2().getCcy();
         CcyComparator comparator = new CcyComparator(new CcyAmtHandling(), new CcyAmtHandling());
-        List<FxRateHandling> currencyList = getMainList().getFxRate();
+        List<FxRateHandling> currencyList = getCurrentCurrencyRates().getFxRate();
         //checking for equal ccy enums to the ones loaded from DB and assigning amt value
         for (FxRateHandling handle : currencyList) {
-            checkHandleToCcyISO(handle, ccy1, comparator.getComparable1(), 0);
-            checkHandleToCcyISO(handle, ccy2, comparator.getComparable2(), 0);
-            checkHandleToCcyISO(handle, ccy1, comparator.getComparable1(), 1);
-            checkHandleToCcyISO(handle, ccy2, comparator.getComparable2(), 1);
+            checkHandleToCcyISO(handle, ccy1, comparator.getCurrency1(), 0);
+            checkHandleToCcyISO(handle, ccy2, comparator.getCurrency2(), 0);
+            checkHandleToCcyISO(handle, ccy1, comparator.getCurrency1(), 1);
+            checkHandleToCcyISO(handle, ccy2, comparator.getCurrency2(), 1);
         }
         comparator.setConversionAmount(comparatorRes.getConversionAmount());
         return calculateRate(comparator);
@@ -125,14 +124,14 @@ public class MainService {
 
     private CcyComparator calculateRate(CcyComparator comparator) {
         BigDecimal multiplier = comparator.getConversionAmount();
-        BigDecimal val1 = comparator.getComparable1().getAmt();
-        BigDecimal val2 = comparator.getComparable2().getAmt();
+        BigDecimal val1 = comparator.getCurrency1().getAmt();
+        BigDecimal val2 = comparator.getCurrency2().getAmt();
         val2 = val2.divide(val1, 6, RoundingMode.CEILING);
         val1 = val1.divide(val1, 6, RoundingMode.CEILING);
         val1 = val1.multiply(multiplier);
         val2 = val2.multiply(multiplier);
-        comparator.getComparable1().setAmt(val1);
-        comparator.getComparable2().setAmt(val2);
+        comparator.getCurrency1().setAmt(val1);
+        comparator.getCurrency2().setAmt(val2);
         return comparator;
     }
 

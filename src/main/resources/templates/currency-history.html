@@ -49,7 +49,7 @@
             <tr th:each="el: ${currencyRatesList}">
                 <td th:text="${el.dt}"/>
                 <td th:text="${el.ccyAmt[1].ccy}"></td>
-                <td th:text="${el.ccyAmt[1].amt} + ' : ' + ${el.ccyAmt[0].amt}"></td>
+                <td th:text="${el.ccyAmt[1].amt}"></td>
             </tr>
             </thead>
         </table>

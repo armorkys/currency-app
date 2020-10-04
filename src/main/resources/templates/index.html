@@ -21,7 +21,7 @@
         </tr>
         <tr th:each="el: ${currencyList}">
             <td th:text="${el.ccyAmt[1].ccy}"></td>
-            <td th:text="${el.ccyAmt[1].amt} + ' : ' + ${el.ccyAmt[0].amt}"></td>
+            <td th:text="${el.ccyAmt[1].amt}"></td>
             <td>
                 <a th:href="@{/getCurrencyHistory/{ccy}(ccy=${el.ccyAmt[1].ccy})}" class="btn btn-secondary">Get
                     History</a>

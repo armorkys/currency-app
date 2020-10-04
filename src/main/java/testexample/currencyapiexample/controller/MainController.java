@@ -1,12 +1,13 @@
 package testexample.currencyapiexample.controller;
 
-import models.CcyISO4217;
-import models.FxRatesHandling;
+
+import lt.lb.webservices.fxrates.CcyISO4217;
+import lt.lb.webservices.fxrates.FxRatesHandling;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,15 +26,16 @@ import java.util.Date;
 
 @Controller
 public class MainController {
-    private final String URL_MAIN = "http://www.lb.lt/webservices/FxRates/FxRates.asmx/";
+
     @Autowired
     RestTemplate restTemplate;
+
     @Autowired
     private MainService service;
 
     @GetMapping("/")
     public String getCurrentRatesList(Model model) throws DatatypeConfigurationException {
-        model.addAttribute("currencyList", service.getMainList().getFxRate());
+        model.addAttribute("currencyList", service.getCurrentCurrencyRates().getFxRate());
         return "index";
     }
 
@@ -53,27 +55,21 @@ public class MainController {
 
     @PostMapping("/getCurrencyHistoryCustom/{ccy}")
     public String getCurrencyHistoryCustom(@PathVariable(value = "ccy") CcyISO4217 ccy,
-                                           @ModelAttribute("dateInputTemplate") @Valid DateHistoryTemplate formTemplate, Model model,
-                                           BindingResult bindingResult) {
-
-        System.out.println("Start date - " + convertToLocalDate(formTemplate.getStartDate()));
-        System.out.println("End date - " + convertToLocalDate(formTemplate.getEndDate()));
-
-        if (bindingResult.hasFieldErrors()) {
+                                           @Valid @ModelAttribute("dateInputTemplate") DateHistoryTemplate formTemplate,
+                                           BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
             LocalDate endDate = LocalDate.now();
             LocalDate startDate = endDate.minusYears(1);
-            FxRatesHandling historyList = service.getCurrencyHistoryBase(ccy.toString(), startDate.toString(), endDate.toString());
-            model.addAttribute("dateInputTemplate", formTemplate);
+            lt.lb.webservices.fxrates.FxRatesHandling historyList = service.getCurrencyHistoryBase(ccy.toString(), startDate.toString(), endDate.toString());
             model.addAttribute("currencyRatesList", historyList.getFxRate());
-            return "currency-history";
         } else {
             FxRatesHandling historyList = service.getCurrencyHistoryBase(formTemplate.getCcy().toString(),
-                    convertToLocalDate(formTemplate.getStartDate()).toString(),
-                    convertToLocalDate(formTemplate.getEndDate()).toString());
-            model.addAttribute("dateInputTemplate", formTemplate);
+                    formTemplate.getStartDate().toString(),
+                    formTemplate.getEndDate().toString());
             model.addAttribute("currencyRatesList", historyList.getFxRate());
-            return "currency-history";
         }
+        model.addAttribute("dateInputTemplate", formTemplate);
+        return "currency-history";
     }
 
 
@@ -81,28 +77,26 @@ public class MainController {
     public String convertCurrencyGet(Model model) throws DatatypeConfigurationException {
         model.addAttribute("answerActive", Boolean.FALSE);
         model.addAttribute("ccyComparatorAns", new CcyComparator());
-        model.addAttribute("currencyNameList", service.getMainList().getFxRate());
+        model.addAttribute("currencyNameList", service.getCurrentCurrencyRates().getFxRate());
         model.addAttribute("ccyComparator", new CcyComparator());
         return "convert-currency";
     }
 
     @PostMapping("/convertCurrency")
-    public String convertCurrencyPost(@ModelAttribute("ccyComparator") @Valid CcyComparator compareHandler,
-                                      Model model, BindingResult bindingResult) throws DatatypeConfigurationException {
-        if (bindingResult.hasFieldErrors()) {
-            System.out.println("Binding result errors");
+    public String convertCurrencyPost(@Valid @ModelAttribute("ccyComparator") CcyComparator compareHandler,
+                                      BindingResult bindingResult, Model model) throws DatatypeConfigurationException {
+        if (bindingResult.hasErrors()) {
             model.addAttribute("answerActive", Boolean.FALSE);
-            model.addAttribute("ccyComparatorAns", service.compareCcyRate(compareHandler));
-            model.addAttribute("currencyNameList", service.getMainList().getFxRate());
-            model.addAttribute("ccyComparator", new CcyComparator());
-            return "convert-currency";
+            model.addAttribute("ccyComparatorAns", new CcyComparator());
+
         } else {
             model.addAttribute("answerActive", Boolean.TRUE);
             model.addAttribute("ccyComparatorAns", service.compareCcyRate(compareHandler));
-            model.addAttribute("currencyNameList", service.getMainList().getFxRate());
-            model.addAttribute("ccyComparator", new CcyComparator());
-            return "convert-currency";
+
         }
+        model.addAttribute("currencyNameList", service.getCurrentCurrencyRates().getFxRate());
+        model.addAttribute("ccyComparator", new CcyComparator());
+        return "convert-currency";
     }
 
 

@@ -6,4 +6,5 @@ import testexample.currencyapiexample.model.CurrencyRatesHandler;
 
 @Repository
 public interface CurrencyRatesHandlerRepository extends CrudRepository<CurrencyRatesHandler, Integer> {
+   // CurrencyRatesHandler findByccy();
 }

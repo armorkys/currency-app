@@ -67,11 +67,18 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-quartz</artifactId>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/javax.validation/validation-api -->
+
+
 		<dependency>
-			<groupId>javax.validation</groupId>
-			<artifactId>validation-api</artifactId>
-			<version>2.0.1.Final</version>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 
@@ -86,6 +93,18 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+		</dependency>
+
+
 	</dependencies>
 
 	<build>
@@ -125,14 +144,8 @@
 				</executions>
 				<configuration>
 					<schemaLanguage>WSDL</schemaLanguage>
+					<generatePackage>lt.lb.webservices.fxrates</generatePackage>
 					<addCompileSourceRoot>true</addCompileSourceRoot>
-					<schemas>
-						<schema>
-							<url>
-								FxRates.wsdl
-							</url>
-						</schema>
-					</schemas>
 				</configuration>
 			</plugin>
 

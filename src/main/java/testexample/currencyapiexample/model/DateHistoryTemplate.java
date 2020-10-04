@@ -1,30 +1,31 @@
 package testexample.currencyapiexample.model;
 
-import models.CcyISO4217;
+import lt.lb.webservices.fxrates.CcyISO4217;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.Objects;
 
 public class DateHistoryTemplate {
 
     private CcyISO4217 ccy;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @NotEmpty
     @PastOrPresent
-    private Date startDate;
+    @NotNull
+    private LocalDate startDate;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @NotEmpty
     @PastOrPresent
-    private Date endDate;
+    @NotNull
+    private LocalDate endDate;
 
     public DateHistoryTemplate() {
     }
 
-    public DateHistoryTemplate(CcyISO4217 ccy, Date startDate, Date endDate) {
+    public DateHistoryTemplate(CcyISO4217 ccy, LocalDate startDate, LocalDate endDate) {
         this.ccy = ccy;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -38,19 +39,34 @@ public class DateHistoryTemplate {
         this.ccy = ccy;
     }
 
-    public Date getStartDate() {
+    public LocalDate getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
     }
 
-    public Date getEndDate() {
+    public LocalDate getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DateHistoryTemplate that = (DateHistoryTemplate) o;
+        return ccy == that.ccy &&
+                Objects.equals(startDate, that.startDate) &&
+                Objects.equals(endDate, that.endDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ccy, startDate, endDate);
     }
 }
