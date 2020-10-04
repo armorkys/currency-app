@@ -97,33 +97,26 @@ public class MainService {
     }
 
     public CcyComparator compareCcyRate(CcyComparator comparatorRes) throws DatatypeConfigurationException {
-        CcyISO4217 cc3;
-        cc3 = comparatorRes.getCurrency1().getCcy();
-        CcyISO4217 ccy1 = comparatorRes.getCurrency1().getCcy();
-        CcyISO4217 ccy2 = comparatorRes.getCurrency2().getCcy();
-        CcyComparator comparator = new CcyComparator(new CcyAmtHandling(), new CcyAmtHandling());
-        List<FxRateHandling> currencyList = getCurrentCurrencyRates().getFxRate();
-        //checking for equal ccy enums to the ones loaded from DB and assigning amt value
-        for (FxRateHandling handle : currencyList) {
-            checkHandleToCcyISO(handle, ccy1, comparator.getCurrency1(), 0);
-            checkHandleToCcyISO(handle, ccy2, comparator.getCurrency2(), 0);
-            checkHandleToCcyISO(handle, ccy1, comparator.getCurrency1(), 1);
-            checkHandleToCcyISO(handle, ccy2, comparator.getCurrency2(), 1);
-        }
-        comparator.setConversionAmount(comparatorRes.getConversionAmount());
-        return calculateRate(comparator);
+        setValueToCcyAmtHandling(comparatorRes.getCurrency1().getCcy(),
+                comparatorRes.getCurrency1());
+        setValueToCcyAmtHandling(comparatorRes.getCurrency2().getCcy(),
+                comparatorRes.getCurrency2());
+        return calculateRate(comparatorRes);
     }
 
-    private void checkHandleToCcyISO(FxRateHandling handle, CcyISO4217 ccy, CcyAmtHandling comparable, int step) {
-        if (handle.getCcyAmt().get(step).getCcy() == ccy) {
-            comparable.setCcy(handle.getCcyAmt().get(step).getCcy());
-            comparable.setAmt(handle.getCcyAmt().get(step).getAmt());
+    private void setValueToCcyAmtHandling(CcyISO4217 ccy, CcyAmtHandling ccyAmtHandling){
+        if(ccy == CcyISO4217.EUR){
+            ccyAmtHandling.setCcy(ccy);
+            ccyAmtHandling.setAmt(new BigDecimal("1"));
+        }else {
+            CurrencyRatesHandler currencyRatesHandler = dbRepository.findByCcy(ccy.toString());
+            ccyAmtHandling.setAmt(currencyRatesHandler.getAmt());
+            ccyAmtHandling.setCcy(ccy);
         }
-
     }
 
     private CcyComparator calculateRate(CcyComparator comparator) {
-        BigDecimal multiplier = comparator.getConversionAmount();
+        BigDecimal multiplier = comparator.getAmount();
         BigDecimal val1 = comparator.getCurrency1().getAmt();
         BigDecimal val2 = comparator.getCurrency2().getAmt();
         val2 = val2.divide(val1, 6, RoundingMode.CEILING);

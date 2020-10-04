@@ -18,7 +18,7 @@ public class CcyComparator {
     @Digits(integer = 20, fraction = 2)
     @DecimalMin(value = "0", inclusive = false, message = "Must be more than 0")
     @NotNull(message = "Must not be null")
-    private BigDecimal conversionAmount;
+    private BigDecimal amount;
 
 
 
@@ -65,12 +65,12 @@ public class CcyComparator {
         isActive = active;
     }
 
-    public BigDecimal getConversionAmount() {
-        return conversionAmount;
+    public BigDecimal getAmount() {
+        return amount;
     }
 
-    public void setConversionAmount(BigDecimal conversionAmount) {
-        this.conversionAmount = conversionAmount;
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
     }
 
     public boolean isActive() {
@@ -85,11 +85,11 @@ public class CcyComparator {
         return isActive == that.isActive &&
                 Objects.equals(currency1, that.currency1) &&
                 Objects.equals(currency2, that.currency2) &&
-                Objects.equals(conversionAmount, that.conversionAmount);
+                Objects.equals(amount, that.amount);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(currency1, currency2, isActive, conversionAmount);
+        return Objects.hash(currency1, currency2, isActive, amount);
     }
 }

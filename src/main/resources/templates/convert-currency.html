@@ -17,7 +17,7 @@
         <div class="row">
             <div class="col">
                 <label>Select Currency</label>
-                <select class="form-control" th:field="${ccyComparator.comparable1.ccy}">
+                <select class="form-control" th:field="${ccyComparator.currency1.ccy}">
                     <option value="">--</option>
                     <option th:utext="${currencyNameList[0].ccyAmt[0].ccy}"
                             th:value="${currencyNameList[0].ccyAmt[0].ccy}"></option>
@@ -25,13 +25,13 @@
                             th:value="${cur.ccyAmt[1].ccy}"
                             th:utext="${cur.ccyAmt[1].ccy}"/>
                 </select>
-                <div th:if="${#fields.hasErrors('comparable1')}" th:errors="*{comparable1}" class="fieldinvalid">Value 1
+                <div th:if="${#fields.hasErrors('currency1')}" th:errors="*{currency1}" class="fieldinvalid">Value 1
                     Error
                 </div>
             </div>
             <div class="col">
                 <label>Select Currency</label>
-                <select class="form-control" th:field="${ccyComparator.comparable2.ccy}">
+                <select class="form-control" th:field="${ccyComparator.currency2.ccy}">
                     <option value="">--</option>
                     <option th:utext="${currencyNameList[0].ccyAmt[0].ccy}"
                             th:value="${currencyNameList[0].ccyAmt[0].ccy}"></option>
@@ -39,15 +39,15 @@
                             th:value="${cur.ccyAmt[1].ccy}"
                             th:utext="${cur.ccyAmt[1].ccy}"/>
                 </select>
-                <div th:if="${#fields.hasErrors('comparable2')}" th:errors="*{comparable2}" class="fieldinvalid">Value 2
+                <div th:if="${#fields.hasErrors('currency2')}" th:errors="*{currency2}" class="fieldinvalid">Value 2
                     Error
                 </div>
             </div>
             <div class="col">
                 <label>Amount</label>
-                <input type="text" th:field="*{conversionAmount}" placeholder="Enter Amount"
+                <input type="text" th:field="*{amount}" placeholder="Enter Amount"
                        class="form-control">
-                <div th:if="${#fields.hasErrors('conversionAmount')}" th:errors="*{conversionAmount}"
+                <div th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"
                      class="fieldinvalid">Value 3 error
                 </div>
             </div>
@@ -61,12 +61,12 @@
         <div th:case="${true}">
             <div class="row">
                 <div class="col col-sm-3">
-                    <h4 th:utext="${ccyComparatorAns.comparable1.ccy}"></h4>
-                    <h4 th:utext="${ccyComparatorAns.comparable1.amt}"></h4>
+                    <h4 th:utext="${ccyComparatorAns.currency1.ccy}"></h4>
+                    <h4 th:utext="${ccyComparatorAns.currency1.amt}"></h4>
                 </div>
                 <div class="col col-sm-3">
-                    <h4 th:utext="${ccyComparatorAns.comparable2.ccy}"></h4>
-                    <h4 th:utext="${ccyComparatorAns.comparable2.amt}"></h4>
+                    <h4 th:utext="${ccyComparatorAns.currency2.ccy}"></h4>
+                    <h4 th:utext="${ccyComparatorAns.currency2.amt}"></h4>
                 </div>
             </div>
         </div>
