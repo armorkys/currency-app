@@ -22,17 +22,15 @@ import java.time.LocalDate;
 @Service
 public class MainService {
 
-    @VisibleForTesting
     public static final String URL_MAIN = "http://www.lb.lt/webservices/FxRates/FxRates.asmx/";
     public static final String URL_CURRENCY_HISTORY = "getFxRatesForCurrency?tp=EU&ccy={ccy}&dtFrom={startDate}&dtTo={endDate}";
     public static final String URL_CURRENCY_CURRENT = "getCurrentFxRates?tp=EU";
 
     @Autowired
-    CurrencyRatesHandlerRepository dbRepository;
+    private CurrencyRatesHandlerRepository dbRepository;
 
     @Autowired
-    @VisibleForTesting
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     @Autowired
     public MainService(RestTemplateBuilder restTemplateBuilder) {
