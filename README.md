@@ -5,7 +5,7 @@ Webapp created for viewing currency ratios to EUR, currency history and currency
 Finished
 
 ## Technologies
-Project has to be compiled on java11
+Project has to be compiled on java 11 
 Made with spring boot & thymeleaf.
 
 ## Database
