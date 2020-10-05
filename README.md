@@ -18,3 +18,6 @@ details can be viewed in src/main/resources/application.properties
 Running spring boot server
 In home folder open windows terminal:
 mvnw spring-boot:run
+
+access in browswer:
+http://localhost:8089/
