@@ -16,8 +16,9 @@ http://localhost:8089/h2-console
 Details can be viewed in src/main/resources/application.properties
 
 ## Launching
-Project needs to be built using maven-install on IDE
-or "mvn install" from command line
+Project needs to be built using maven commands:
+"mvn jaxb2:generate" to generate classes for the project
+or "mvn install"
 
 Running spring boot server
 In home folder open windows terminal:
