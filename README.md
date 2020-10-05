@@ -19,5 +19,5 @@ Running spring boot server
 In home folder open windows terminal:
 mvnw spring-boot:run
 
-access in browswer:
+Access in browswer:
 http://localhost:8089/
