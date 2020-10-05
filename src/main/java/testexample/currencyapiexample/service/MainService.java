@@ -35,7 +35,7 @@ public class MainService {
     RestTemplate restTemplate;
 
     @Autowired
-    public MainService(RestTemplateBuilder restTemplateBuilder){
+    public MainService(RestTemplateBuilder restTemplateBuilder) {
         RestTemplate restTemplate = restTemplateBuilder
                 .errorHandler(new RestTemplateResponseErrorHandler())
                 .build();
@@ -46,7 +46,7 @@ public class MainService {
         try {
             ResponseEntity<FxRatesHandling> returnEntity = restTemplate.getForEntity(URL_MAIN + URL_CURRENCY_CURRENT, FxRatesHandling.class);
             return returnEntity.getBody();
-        } catch(HttpStatusCodeException e) {
+        } catch (HttpStatusCodeException e) {
             FxRatesHandling errorFxRates = new FxRatesHandling();
             OprlErrHandling error = new OprlErrHandling();
             error.setDesc("Http status code exception");
@@ -58,13 +58,14 @@ public class MainService {
         }
     }
 
-    public void updateDB(){
+    public boolean updateDB() {
         FxRatesHandling fxRates = requestRatesListFromAPI();
         if (fxRates.getFxRate().iterator().hasNext()) {
             dbRepository.deleteAll();
             giveDataToDatabase(fxRates);
-        } else if (!fxRates.getFxRate().iterator().hasNext()) {
-            System.out.println("No valid response from Server ");
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -131,14 +132,14 @@ public class MainService {
 
     public FxRatesHandling getCurrencyHistory(CcyISO4217 ccy, LocalDate startDate, LocalDate endDate) {
         LocalDate minimumDate = LocalDate.parse("2014-09-30");
-        if(startDate.isBefore(minimumDate))
+        if (startDate.isBefore(minimumDate))
             startDate = minimumDate;
-        if(endDate.isBefore(minimumDate))
+        if (endDate.isBefore(minimumDate))
             endDate = minimumDate;
         try {
             ResponseEntity<FxRatesHandling> returnEntity = restTemplate.getForEntity(URL_MAIN + URL_CURRENCY_HISTORY, FxRatesHandling.class, ccy, startDate, endDate);
             return returnEntity.getBody();
-        } catch(HttpStatusCodeException e) {
+        } catch (HttpStatusCodeException e) {
             FxRatesHandling errorFxRates = new FxRatesHandling();
             OprlErrHandling error = new OprlErrHandling();
             error.setDesc("Http status code exception");
@@ -150,14 +151,11 @@ public class MainService {
         }
 
 
-
-
-
         //return restTemplate.getForObject(URL_MAIN + URL_CURRENCY_HISTORY, FxRatesHandling.class, ccy, startDate, endDate);
     }
 
-    public CcyComparator getComparatorValuesForCcy(CcyComparator currencyComparator){
-        if(currencyComparator.getCurrency1()==null || currencyComparator.getCurrency2() == null || currencyComparator.getAmount() == null)
+    public CcyComparator getComparatorValuesForCcy(CcyComparator currencyComparator) {
+        if (currencyComparator.getCurrency1() == null || currencyComparator.getCurrency2() == null || currencyComparator.getAmount() == null)
             return new CcyComparator();
 
         setValueToCcyAmtHandling(currencyComparator.getCurrency1().getCcy(),
@@ -168,18 +166,18 @@ public class MainService {
     }
 
     private void setValueToCcyAmtHandling(CcyISO4217 ccy, CcyAmtHandling ccyAmt) {
-           if (ccy == CcyISO4217.EUR) {
+        if (ccy == CcyISO4217.EUR) {
             ccyAmt.setCcy(ccy);
             ccyAmt.setAmt(new BigDecimal("1"));
         } else {
             CurrencyRatesHandler currencyRatesHandler = dbRepository.findByCcy(ccy.toString());
-               System.out.println("Currency rates handler - " + currencyRatesHandler);
             ccyAmt.setAmt(currencyRatesHandler.getAmt());
             ccyAmt.setCcy(ccy);
         }
     }
 
-    private CcyComparator calculateRate(CcyComparator currencyComparator) { ;
+    private CcyComparator calculateRate(CcyComparator currencyComparator) {
+
         BigDecimal val1 = currencyComparator.getCurrency1().getAmt();
         BigDecimal val2 = currencyComparator.getCurrency2().getAmt();
         currencyComparator.setRatio(val1);

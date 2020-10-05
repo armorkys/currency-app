@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.client.RestTemplate;
 import testexample.currencyapiexample.model.CcyComparator;
 import testexample.currencyapiexample.model.DateHistoryTemplate;
 import testexample.currencyapiexample.service.MainService;
@@ -21,9 +20,6 @@ import java.time.LocalDate;
 
 @Controller
 public class MainController {
-
-    @Autowired
-    RestTemplate restTemplate;
 
     @Autowired
     private MainService service;

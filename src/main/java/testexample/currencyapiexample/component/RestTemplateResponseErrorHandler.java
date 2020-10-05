@@ -14,17 +14,17 @@ public class RestTemplateResponseErrorHandler implements ResponseErrorHandler {
     public boolean hasError(ClientHttpResponse response) throws IOException {
         return (
                 response.getStatusCode().series() == HttpStatus.Series.CLIENT_ERROR
-                || response.getStatusCode().series() == HttpStatus.Series.SERVER_ERROR
-                );
+                        || response.getStatusCode().series() == HttpStatus.Series.SERVER_ERROR
+        );
     }
 
     @Override
-    public void handleError(ClientHttpResponse response) throws IOException{
-        if(response.getStatusCode().series() == HttpStatus.Series.SERVER_ERROR){
-            //handle server error
-        } else if (response.getStatusCode().series() == HttpStatus.Series.CLIENT_ERROR){
-            //handle client error
-            if(response.getStatusCode() == HttpStatus.NOT_FOUND){
+    public void handleError(ClientHttpResponse response) throws IOException {
+        if(response.getStatusCode().series() == HttpStatus.Series.SERVER_ERROR) {
+            System.out.println("Http Server Error");
+        } else if (response.getStatusCode().series() == HttpStatus.Series.CLIENT_ERROR) {
+            System.out.println("Http Client error");
+            if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
                 try {
                     throw new NotFoundException("Not found exception");
                 } catch (NotFoundException e) {
