@@ -45,9 +45,16 @@ class MainServiceTest {
     @MockBean
     CurrencyRatesHandlerRepository database;
     @Autowired
-    private MockMvc mockMvc;
-    @Autowired
     private MainService mainService;
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private MockRestServiceServer server;
+
+    @BeforeEach
+    void setup() {
+        server = MockRestServiceServer.bindTo(restTemplate).build();
+    }
 
     @AfterEach
     void cleanup() {
@@ -56,14 +63,8 @@ class MainServiceTest {
 
     @Test
     public void whenHistoricalRatesQueried_ListOfRatesRetrieved() throws DatatypeConfigurationException, JsonProcessingException {
-        RestTemplate restTemplate = mainService.restTemplate;
-        MockRestServiceServer server = MockRestServiceServer.bindTo(restTemplate).build();
-        FxRatesHandling expectedFxRates = new FxRatesHandling();
-        FxRateHandling fxRate = addDataToFxRateHandling(
-                "2020-01-01",
-                FxRateTypeHandling.EU
-        );
-        expectedFxRates.getFxRate().add(fxRate);
+        FxRatesHandling expectedFxRates = createFxRatesWithListElements(1);
+
         String expectedReturnBody = xmlMapper.writeValueAsString(expectedFxRates);
         DateHistoryTemplate urlData = new DateHistoryTemplate(CcyISO4217.EUR, LocalDate.parse("2020-01-01"), LocalDate.parse("2020-02-01"));
         server.expect(ExpectedCount.once(), requestTo(
@@ -82,14 +83,8 @@ class MainServiceTest {
 
     @Test
     public void whenHistoricalRatesQueried_ListOfRatesRetrieved_DatesBefore2014() throws DatatypeConfigurationException, JsonProcessingException {
-        RestTemplate restTemplate = mainService.restTemplate;
-        MockRestServiceServer server = MockRestServiceServer.bindTo(restTemplate).build();
-        FxRatesHandling expectedFxRates = new FxRatesHandling();
-        FxRateHandling fxRate = addDataToFxRateHandling(
-                "2020-01-01",
-                FxRateTypeHandling.EU
-        );
-            expectedFxRates.getFxRate().add(fxRate);
+        FxRatesHandling expectedFxRates = createFxRatesWithListElements(1);
+
         String expectedReturnBody = xmlMapper.writeValueAsString(expectedFxRates);
         DateHistoryTemplate urlData = new DateHistoryTemplate(CcyISO4217.EUR, LocalDate.parse("2014-09-30"), LocalDate.parse("2014-09-30"));
         server.expect(ExpectedCount.once(), requestTo(
@@ -137,20 +132,8 @@ class MainServiceTest {
 
     @Test
     public void whenCurrentRatesQueried_LBReturns500_ListOfFxRatesIsEmpty() throws DatatypeConfigurationException, JsonProcessingException {
-        RestTemplate restTemplate = mainService.restTemplate;
-        MockRestServiceServer server = MockRestServiceServer.bindTo(restTemplate).build();
-        FxRatesHandling expectedFxRates = new FxRatesHandling();
-        OprlErrHandling error = new OprlErrHandling();
-            error.setDesc("Expecting this error in test");
-        ErrorCode errorCode = new ErrorCode();
-            errorCode.setPrtry("500");
-            error.setErr(errorCode);
-            expectedFxRates.setOprlErr(error);
-        FxRateHandling fxRate = addDataToFxRateHandling(
-                "2020-01-01",
-                FxRateTypeHandling.EU
-        );
-            expectedFxRates.getFxRate().add(fxRate);
+        FxRatesHandling expectedFxRates = createFxRatesEmptyWithErrors(1, "500", "Expecting this error in test");
+
         String expectedReturnBody = xmlMapper.writeValueAsString(expectedFxRates);
         server.expect(ExpectedCount.once(), requestTo(URL_MAIN + URL_CURRENCY_CURRENT))
                 .andExpect(method(HttpMethod.GET))
@@ -189,8 +172,6 @@ class MainServiceTest {
 
     @Test
     public void updateDBQueried_LBReturns500_ListOfFxRatesIsNormalValues() throws DatatypeConfigurationException, JsonProcessingException {
-        RestTemplate restTemplate = mainService.restTemplate;
-        MockRestServiceServer server = MockRestServiceServer.bindTo(restTemplate).build();
         FxRatesHandling expectedFxRates = createFxRatesWithListElements(4);
         String expectedReturnBody = xmlMapper.writeValueAsString(expectedFxRates);
         server.expect(ExpectedCount.once(), requestTo(URL_MAIN + URL_CURRENCY_CURRENT))
@@ -202,9 +183,7 @@ class MainServiceTest {
     }
 
     @Test
-    public void getComparatorValuesForCcy_CcyComparatorEmpty(){
-        RestTemplate restTemplate = mainService.restTemplate;
-        MockRestServiceServer server = MockRestServiceServer.bindTo(restTemplate).build();
+    public void getComparatorValuesForCcy_CcyComparatorEmpty() {
         CcyComparator expectedComparator = new CcyComparator();
         CcyComparator actualComparator = mainService.getComparatorValuesForCcy(expectedComparator);
         assertThat(actualComparator).isEqualTo(expectedComparator);
