@@ -16,6 +16,9 @@ http://localhost:8089/h2-console
 Details can be viewed in src/main/resources/application.properties
 
 ## Launching
+Project needs to be built using maven-install
+or "mvn install" command
+
 Running spring boot server
 In home folder open windows terminal:
 mvnw spring-boot:run
