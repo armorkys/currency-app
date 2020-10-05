@@ -1,7 +1,6 @@
 package testexample.currencyapiexample.service;
 
 import lt.lb.webservices.fxrates.*;
-import org.assertj.core.util.VisibleForTesting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;

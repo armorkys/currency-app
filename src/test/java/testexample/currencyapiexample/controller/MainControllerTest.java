@@ -3,7 +3,6 @@ package testexample.currencyapiexample.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lt.lb.webservices.fxrates.*;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -108,6 +107,7 @@ class MainControllerTest {
         FxRatesHandling fxRatesExpected = createFxRatesWithListElements(10);
         String expectedReturnBody = xmlMapper.writeValueAsString(fxRatesExpected);
         DateHistoryTemplate urlInput = new DateHistoryTemplate(CcyISO4217.USD, LocalDate.parse("2020-01-01"), LocalDate.parse("2020-02-10"));
+
         server.expect(ExpectedCount.once(), requestTo(
                 URL_MAIN + "getFxRatesForCurrency?tp=EU&ccy=" + urlInput.getCcy()
                         + "&dtFrom=" + urlInput.getStartDate()
@@ -164,6 +164,7 @@ class MainControllerTest {
     void convertCurrencyGet() throws DatatypeConfigurationException, JsonProcessingException {
         FxRatesHandling fxRatesExpected = createFxRatesWithListElements(5);
         String expectedReturnBody = xmlMapper.writeValueAsString(fxRatesExpected);
+
         server.expect(ExpectedCount.once(), requestTo(
                 URL_MAIN + URL_CURRENCY_CURRENT))
                 .andExpect(method(HttpMethod.GET))
@@ -213,6 +214,7 @@ class MainControllerTest {
 
         FxRatesHandling fxRatesExpected = createFxRatesWithListElements(5);
         String expectedReturnBody = xmlMapper.writeValueAsString(fxRatesExpected);
+
         server.expect(ExpectedCount.once(), requestTo(
                 URL_MAIN + URL_CURRENCY_CURRENT))
                 .andExpect(method(HttpMethod.GET))
