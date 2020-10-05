@@ -13,7 +13,7 @@ H2 used for database management.
 Access point for console view:
 http://localhost:8089/h2-console
 
-details can be viewed in src/main/resources/application.properties
+Details can be viewed in src/main/resources/application.properties
 
 ## Launching
 Running spring boot server
