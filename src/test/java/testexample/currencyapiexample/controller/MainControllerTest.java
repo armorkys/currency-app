@@ -3,7 +3,6 @@ package testexample.currencyapiexample.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lt.lb.webservices.fxrates.*;
-import org.apache.tomcat.jni.Local;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +19,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.client.RestTemplate;
+import testexample.currencyapiexample.model.CcyComparator;
 import testexample.currencyapiexample.model.DateHistoryTemplate;
 import testexample.currencyapiexample.repository.CurrencyRatesHandlerRepository;
 import testexample.currencyapiexample.service.MainService;
@@ -29,16 +29,13 @@ import javax.xml.datatype.DatatypeFactory;
 import java.beans.PropertyEditor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.temporal.TemporalAmount;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
-import static testexample.currencyapiexample.service.MainService.*;
+import static testexample.currencyapiexample.service.MainService.URL_CURRENCY_CURRENT;
+import static testexample.currencyapiexample.service.MainService.URL_MAIN;
 
 @SpringBootTest
 class MainControllerTest {
@@ -81,30 +78,26 @@ class MainControllerTest {
         Model model = new TestModel();
         MockRestServiceServer server = MockRestServiceServer.bindTo(restTemplate).build();
         FxRatesHandling fxRatesExpected = createFxRatesWithListElements(5);
-
         String expectedReturnBody = xmlMapper.writeValueAsString(fxRatesExpected);
-
         DateHistoryTemplate urlInput = new DateHistoryTemplate();
-urlInput.setCcy(CcyISO4217.USD);
-urlInput.setEndDate(LocalDate.now());
-urlInput.setStartDate(urlInput.getEndDate().minusYears(1));
-
-
+        urlInput.setCcy(CcyISO4217.USD);
+        urlInput.setEndDate(LocalDate.now());
+        urlInput.setStartDate(urlInput.getEndDate().minusYears(1));
         server.expect(ExpectedCount.once(), requestTo(
                 URL_MAIN + "getFxRatesForCurrency?tp=EU&ccy=" + urlInput.getCcy()
                         + "&dtFrom=" + urlInput.getStartDate()
                         + "&dtTo=" + urlInput.getEndDate()))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess(expectedReturnBody, MediaType.APPLICATION_XML));
-
         mainController.getCurrencyHistory(CcyISO4217.USD, model);
-
         server.verify();
-
         List<FxRateHandling> currencyRatesList = (List<FxRateHandling>) model.getAttribute("currencyRatesList");
-
         Assertions.assertThat(
                 currencyRatesList).hasSize(5);
+        Assertions.assertThat(
+                currencyRatesList.get(0).getTp()).isEqualTo(FxRateTypeHandling.EU);
+        Assertions.assertThat(
+                currencyRatesList.get(0).getCcyAmt().get(1).getCcy()).isEqualTo(CcyISO4217.USD);
     }
 
     @Test
@@ -112,12 +105,8 @@ urlInput.setStartDate(urlInput.getEndDate().minusYears(1));
         Model model = new TestModel();
         MockRestServiceServer server = MockRestServiceServer.bindTo(restTemplate).build();
         FxRatesHandling fxRatesExpected = createFxRatesWithListElements(10);
-
         String expectedReturnBody = xmlMapper.writeValueAsString(fxRatesExpected);
-
         DateHistoryTemplate urlInput = new DateHistoryTemplate(CcyISO4217.USD, LocalDate.parse("2020-01-01"), LocalDate.parse("2020-02-10"));
-
-
         server.expect(ExpectedCount.once(), requestTo(
                 URL_MAIN + "getFxRatesForCurrency?tp=EU&ccy=" + urlInput.getCcy()
                         + "&dtFrom=" + urlInput.getStartDate()
@@ -127,22 +116,155 @@ urlInput.setStartDate(urlInput.getEndDate().minusYears(1));
 
         DateHistoryTemplate dateTemplate = new DateHistoryTemplate(CcyISO4217.USD, urlInput.getStartDate(), urlInput.getEndDate());
         BindingResult bindingResult = new TestBindingResult();
-        mainController.getCurrencyHistoryCustom(CcyISO4217.USD, dateTemplate, bindingResult, model);
-
+        mainController.getCurrencyHistoryCustom(urlInput.getCcy(), dateTemplate, bindingResult, model);
         server.verify();
-
         List<FxRateHandling> currencyRatesList = (List<FxRateHandling>) model.getAttribute("currencyRatesList");
-
         Assertions.assertThat(
                 currencyRatesList).hasSize(10);
+        Assertions.assertThat(
+                currencyRatesList.get(0).getTp()).isEqualTo(FxRateTypeHandling.EU);
+        Assertions.assertThat(
+                currencyRatesList.get(0).getCcyAmt().get(1).getCcy()).isEqualTo(CcyISO4217.USD);
     }
 
     @Test
-    void convertCurrencyGet() {
+    void getCurrencyHistoryCustomWithErrors() throws DatatypeConfigurationException, JsonProcessingException {
+        Model model = new TestModel();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(restTemplate).build();
+        FxRatesHandling fxRatesExpected = createFxRatesWithListElements(10);
+        String expectedReturnBody = xmlMapper.writeValueAsString(fxRatesExpected);
+        DateHistoryTemplate urlInput = new DateHistoryTemplate();
+        urlInput.setCcy(CcyISO4217.USD);
+        urlInput.setEndDate(LocalDate.now());
+        urlInput.setStartDate(urlInput.getEndDate().minusYears(1));
+        server.expect(ExpectedCount.once(), requestTo(
+                URL_MAIN + "getFxRatesForCurrency?tp=EU&ccy=" + urlInput.getCcy()
+                        + "&dtFrom=" + urlInput.getStartDate()
+                        + "&dtTo=" + urlInput.getEndDate()))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(expectedReturnBody, MediaType.APPLICATION_XML));
+
+        DateHistoryTemplate dateTemplate = new DateHistoryTemplate();
+        dateTemplate.setStartDate(urlInput.getStartDate());
+        dateTemplate.setEndDate(urlInput.getEndDate());
+        dateTemplate.setCcy(urlInput.getCcy());
+        BindingResult bindingResult = new TestBindingResult();
+        bindingResult.addError(new FieldError("dateInputTemplate",
+                "endDate", "Bad end date"));
+        bindingResult.addError(new FieldError("dateInputTemplate",
+                "startDate", "Bad start date"));
+        mainController.getCurrencyHistoryCustom(dateTemplate.getCcy(), dateTemplate, bindingResult, model);
+        server.verify();
+        List<FxRateHandling> currencyRatesList = (List<FxRateHandling>) model.getAttribute("currencyRatesList");
+        Assertions.assertThat(
+                currencyRatesList).hasSize(10);
+        Assertions.assertThat(
+                currencyRatesList.get(0).getTp()).isEqualTo(FxRateTypeHandling.EU);
+        Assertions.assertThat(
+                currencyRatesList.get(0).getCcyAmt().get(1).getCcy()).isEqualTo(CcyISO4217.USD);
     }
 
     @Test
-    void convertCurrencyPost() {
+    void convertCurrencyGet() throws DatatypeConfigurationException, JsonProcessingException {
+        Model model = new TestModel();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(restTemplate).build();
+        FxRatesHandling fxRatesExpected = createFxRatesWithListElements(5);
+        String expectedReturnBody = xmlMapper.writeValueAsString(fxRatesExpected);
+        server.expect(ExpectedCount.once(), requestTo(
+                URL_MAIN + URL_CURRENCY_CURRENT))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(expectedReturnBody, MediaType.APPLICATION_XML));
+        mainController.convertCurrencyGet(model);
+        server.verify();
+        List<FxRateHandling> currencyList = (List<FxRateHandling>) model.getAttribute("currencyNameList");
+        Assertions.assertThat(
+                currencyList).hasSize(5);
+    }
+
+    @Test
+    void convertCurrencyPost() throws DatatypeConfigurationException, JsonProcessingException {
+        Model model = new TestModel();
+        CcyComparator expectedComparator = new CcyComparator();
+        CcyAmtHandling ccyAmt1 = new CcyAmtHandling();
+        ccyAmt1.setCcy(CcyISO4217.EUR);
+        ccyAmt1.setAmt(new BigDecimal("1"));
+        CcyAmtHandling ccyAmt2 = new CcyAmtHandling();
+        ccyAmt2.setCcy(CcyISO4217.EUR);
+        ccyAmt2.setAmt(new BigDecimal("1.2"));
+        expectedComparator.setAmount(new BigDecimal("10"));
+        expectedComparator.setCurrency1(ccyAmt1);
+        expectedComparator.setCurrency2(ccyAmt2);
+        BindingResult bindingResult = new TestBindingResult();
+        CcyComparator actualComparatorTemplate = new CcyComparator();
+        CcyAmtHandling ccyAmtActual1 = new CcyAmtHandling();
+        ccyAmtActual1.setCcy(CcyISO4217.EUR);
+        CcyAmtHandling ccyAmtActual2 = new CcyAmtHandling();
+        ccyAmtActual2.setCcy(CcyISO4217.EUR);
+        actualComparatorTemplate.setAmount(new BigDecimal("10"));
+        actualComparatorTemplate.setCurrency1(ccyAmtActual1);
+        actualComparatorTemplate.setCurrency2(ccyAmtActual2);
+        MockRestServiceServer server = MockRestServiceServer.bindTo(restTemplate).build();
+        FxRatesHandling fxRatesExpected = createFxRatesWithListElements(5);
+        String expectedReturnBody = xmlMapper.writeValueAsString(fxRatesExpected);
+        server.expect(ExpectedCount.once(), requestTo(
+                URL_MAIN + URL_CURRENCY_CURRENT))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(expectedReturnBody, MediaType.APPLICATION_XML));
+        mainController.convertCurrencyPost(actualComparatorTemplate, bindingResult, model);
+        server.verify();
+        List<FxRateHandling> currencyList = (List<FxRateHandling>) model.getAttribute("currencyNameList");
+        CcyComparator actualComparator = (CcyComparator) model.getAttribute("ccyComparatorAns");
+        Assertions.assertThat(
+                (actualComparator.getCurrency1().getCcy())).isEqualTo(expectedComparator.getCurrency1().getCcy());
+        Assertions.assertThat(
+                (actualComparator.getCurrency2().getCcy())).isEqualTo(expectedComparator.getCurrency2().getCcy());
+        Assertions.assertThat(
+                (actualComparator.getCurrency1().getAmt())).isGreaterThan(new BigDecimal("0"));
+        Assertions.assertThat(
+                (actualComparator.getCurrency2().getAmt())).isGreaterThan(new BigDecimal("0"));
+        Assertions.assertThat(
+                currencyList).hasSize(5);
+
+    }
+
+    @Test
+    void convertCurrencyPostWithErrors() throws DatatypeConfigurationException, JsonProcessingException {
+        Model model = new TestModel();
+        CcyComparator expectedComparator = new CcyComparator();
+
+        CcyComparator actualComparatorTemplate = new CcyComparator();
+        CcyAmtHandling ccyAmtActual1 = new CcyAmtHandling();
+        ccyAmtActual1.setCcy(CcyISO4217.EUR);
+        CcyAmtHandling ccyAmtActual2 = new CcyAmtHandling();
+        ccyAmtActual2.setCcy(CcyISO4217.EUR);
+        actualComparatorTemplate.setAmount(new BigDecimal("10"));
+        actualComparatorTemplate.setCurrency1(ccyAmtActual1);
+        actualComparatorTemplate.setCurrency2(ccyAmtActual2);
+
+        MockRestServiceServer server = MockRestServiceServer.bindTo(restTemplate).build();
+        FxRatesHandling fxRatesExpected = createFxRatesWithListElements(5);
+        String expectedReturnBody = xmlMapper.writeValueAsString(fxRatesExpected);
+        server.expect(ExpectedCount.once(), requestTo(
+                URL_MAIN + URL_CURRENCY_CURRENT))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(expectedReturnBody, MediaType.APPLICATION_XML));
+
+        BindingResult bindingResult = new TestBindingResult();
+        bindingResult.addError(new FieldError("dateInputTemplate",
+                "endDate", "Bad end date"));
+        bindingResult.addError(new FieldError("dateInputTemplate",
+                "startDate", "Bad start date"));
+
+        mainController.convertCurrencyPost(actualComparatorTemplate, bindingResult, model);
+        server.verify();
+        List<FxRateHandling> currencyList = (List<FxRateHandling>) model.getAttribute("currencyNameList");
+        CcyComparator actualComparator = (CcyComparator) model.getAttribute("ccyComparatorAns");
+
+        Assertions.assertThat(
+                (actualComparator)).isEqualTo(expectedComparator);
+        Assertions.assertThat(
+                currencyList).hasSize(5);
+
     }
 
     private FxRateHandling addDataToFxRateHandling(String date, FxRateTypeHandling fxRateType) throws DatatypeConfigurationException {
@@ -154,7 +276,7 @@ urlInput.setStartDate(urlInput.getEndDate().minusYears(1));
 
     private FxRatesHandling createFxRatesWithListElements(int amount) throws DatatypeConfigurationException {
         FxRatesHandling fxRatesExpected = new FxRatesHandling();
-        for(int step=0;step<amount;step++){
+        for (int step = 0; step < amount; step++) {
             fxRatesExpected.getFxRate().add(addDataToFxRateHandling(createDateString(step), FxRateTypeHandling.EU));
             CcyAmtHandling temp1 = new CcyAmtHandling();
             temp1.setAmt(new BigDecimal("1"));
@@ -168,34 +290,9 @@ urlInput.setStartDate(urlInput.getEndDate().minusYears(1));
         return fxRatesExpected;
     }
 
-    private void viewFxRates(FxRatesHandling fxRates) {
-        System.out.println("##############################################################################");
-        System.out.println("fxRatesExpected - " + fxRates);
-        System.out.println("fxRatesExpected.getFxRate() - " + fxRates.getFxRate());
-        System.out.println("fxRatesExpected.getFxRate().get(0) - " + fxRates.getFxRate().get(0));
-        System.out.println("fxRatesExpected.getFxRate().get(1) - " + fxRates.getFxRate().get(1));
-        System.out.println("fxRatesExpected.getFxRate().get(0).getDt() - " + fxRates.getFxRate().get(0).getDt());
-        System.out.println("fxRatesExpected.getFxRate().get(0).getTP() - " + fxRates.getFxRate().get(0).getTp());
-        System.out.println("fxRatesExpected.getFxRate().get(1).getDt() - " + fxRates.getFxRate().get(1).getDt());
-        System.out.println("fxRatesExpected.getFxRate().get(1).getTP() - " + fxRates.getFxRate().get(1).getTp());
-        System.out.println("fxRatesExpected.getFxRate().get(0).getCcyAmt() - " + fxRates.getFxRate().get(0).getCcyAmt());
-        System.out.println("fxRatesExpected.getFxRate().get(0).getCcyAmt().get(0) - " + fxRates.getFxRate().get(0).getCcyAmt().get(0));
-        System.out.println("fxRatesExpected.getFxRate().get(0).getCcyAmt().get(0).getCcy() - " + fxRates.getFxRate().get(0).getCcyAmt().get(0).getCcy());
-        System.out.println("fxRatesExpected.getFxRate().get(0).getCcyAmt().get(0).getAmt() - " + fxRates.getFxRate().get(0).getCcyAmt().get(0).getAmt());
-        System.out.println("fxRatesExpected.getFxRate().get(0).getCcyAmt().get(1) - " + fxRates.getFxRate().get(0).getCcyAmt().get(1));
-        System.out.println("fxRatesExpected.getFxRate().get(0).getCcyAmt().get(1).getCcy() - " + fxRates.getFxRate().get(0).getCcyAmt().get(1).getCcy());
-        System.out.println("fxRatesExpected.getFxRate().get(0).getCcyAmt().get(1).getAmt() - " + fxRates.getFxRate().get(0).getCcyAmt().get(1).getAmt());
-        System.out.println("fxRatesExpected.getFxRate().get(1).getCcyAmt().get(0) - " + fxRates.getFxRate().get(1).getCcyAmt().get(0));
-        System.out.println("fxRatesExpected.getFxRate().get(1).getCcyAmt().get(0).getCcy() - " + fxRates.getFxRate().get(1).getCcyAmt().get(0).getCcy());
-        System.out.println("fxRatesExpected.getFxRate().get(1).getCcyAmt().get(0).getAmt() - " + fxRates.getFxRate().get(1).getCcyAmt().get(0).getAmt());
-        System.out.println("fxRatesExpected.getFxRate().get(1).getCcyAmt().get(1) - " + fxRates.getFxRate().get(1).getCcyAmt().get(1));
-        System.out.println("fxRatesExpected.getFxRate().get(1).getCcyAmt().get(1).getCcy() - " + fxRates.getFxRate().get(1).getCcyAmt().get(1).getCcy());
-        System.out.println("fxRatesExpected.getFxRate().get(1).getCcyAmt().get(1).getAmt() - " + fxRates.getFxRate().get(1).getCcyAmt().get(1).getAmt());
-    }
-
-    private String createDateString(int step){
+    private String createDateString(int step) {
         LocalDate date = LocalDate.parse("2020-01-01");
-        LocalDate offsetDate =  date.plusDays(step);
+        LocalDate offsetDate = date.plusDays(step);
         return offsetDate.toString();
     }
 
@@ -245,19 +342,21 @@ urlInput.setStartDate(urlInput.getEndDate().minusYears(1));
     }
 
     private class TestBindingResult implements BindingResult {
+        private List<ObjectError> errors = new ArrayList<>();
+
         @Override
         public String getObjectName() {
             return null;
         }
 
         @Override
-        public void setNestedPath(String nestedPath) {
-
+        public String getNestedPath() {
+            return null;
         }
 
         @Override
-        public String getNestedPath() {
-            return null;
+        public void setNestedPath(String nestedPath) {
+
         }
 
         @Override
@@ -307,7 +406,7 @@ urlInput.setStartDate(urlInput.getEndDate().minusYears(1));
 
         @Override
         public boolean hasErrors() {
-            return false;
+            return (this.errors.size() > 0);
         }
 
         @Override
@@ -427,7 +526,7 @@ urlInput.setStartDate(urlInput.getEndDate().minusYears(1));
 
         @Override
         public void addError(ObjectError error) {
-
+            this.errors.add(error);
         }
     }
 }

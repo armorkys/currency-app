@@ -33,6 +33,14 @@ public class CurrencyRatesHandler {
         this.tp = tp;
     }
 
+    public CurrencyRatesHandler(int id, String ccy, BigDecimal amt, LocalDate dt, String tp) {
+        this.id = id;
+        this.ccy = ccy;
+        this.amt = amt;
+        this.dt = dt;
+        this.tp = tp;
+    }
+
     public CurrencyRatesHandler() {
     }
 

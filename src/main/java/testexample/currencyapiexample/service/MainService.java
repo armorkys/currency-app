@@ -3,9 +3,12 @@ package testexample.currencyapiexample.service;
 import lt.lb.webservices.fxrates.*;
 import org.assertj.core.util.VisibleForTesting;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+import testexample.currencyapiexample.component.RestTemplateResponseErrorHandler;
 import testexample.currencyapiexample.model.CcyComparator;
 import testexample.currencyapiexample.model.CurrencyRatesHandler;
 import testexample.currencyapiexample.repository.CurrencyRatesHandlerRepository;
@@ -21,7 +24,7 @@ public class MainService {
 
     @VisibleForTesting
     public static final String URL_MAIN = "http://www.lb.lt/webservices/FxRates/FxRates.asmx/";
-    static final String URL_CURRENCY_HISTORY = "getFxRatesForCurrency?tp=EU&ccy={ccy}&dtFrom={startDate}&dtTo={endDate}";
+    public static final String URL_CURRENCY_HISTORY = "getFxRatesForCurrency?tp=EU&ccy={ccy}&dtFrom={startDate}&dtTo={endDate}";
     public static final String URL_CURRENCY_CURRENT = "getCurrentFxRates?tp=EU";
 
     @Autowired
@@ -31,8 +34,28 @@ public class MainService {
     @VisibleForTesting
     RestTemplate restTemplate;
 
+    @Autowired
+    public MainService(RestTemplateBuilder restTemplateBuilder){
+        RestTemplate restTemplate = restTemplateBuilder
+                .errorHandler(new RestTemplateResponseErrorHandler())
+                .build();
+    }
+
+
     public FxRatesHandling requestRatesListFromAPI() {
-        return restTemplate.getForObject(URL_MAIN + URL_CURRENCY_CURRENT, FxRatesHandling.class);
+        try {
+            ResponseEntity<FxRatesHandling> returnEntity = restTemplate.getForEntity(URL_MAIN + URL_CURRENCY_CURRENT, FxRatesHandling.class);
+            return returnEntity.getBody();
+        } catch(HttpStatusCodeException e) {
+            FxRatesHandling errorFxRates = new FxRatesHandling();
+            OprlErrHandling error = new OprlErrHandling();
+            error.setDesc("Http status code exception");
+            ErrorCode errorCode = new ErrorCode();
+            errorCode.setPrtry("500");
+            error.setErr(errorCode);
+            errorFxRates.setOprlErr(error);
+            return errorFxRates;
+        }
     }
 
     public void updateDB(){
@@ -112,16 +135,31 @@ public class MainService {
             startDate = minimumDate;
         if(endDate.isBefore(minimumDate))
             endDate = minimumDate;
+        try {
+            ResponseEntity<FxRatesHandling> returnEntity = restTemplate.getForEntity(URL_MAIN + URL_CURRENCY_HISTORY, FxRatesHandling.class, ccy, startDate, endDate);
+            return returnEntity.getBody();
+        } catch(HttpStatusCodeException e) {
+            FxRatesHandling errorFxRates = new FxRatesHandling();
+            OprlErrHandling error = new OprlErrHandling();
+            error.setDesc("Http status code exception");
+            ErrorCode errorCode = new ErrorCode();
+            errorCode.setPrtry("500");
+            error.setErr(errorCode);
+            errorFxRates.setOprlErr(error);
+            return errorFxRates;
+        }
 
 
-        ResponseEntity<FxRatesHandling> returnEntity = restTemplate.getForEntity(URL_MAIN + URL_CURRENCY_HISTORY, FxRatesHandling.class, ccy, startDate, endDate);
-        return returnEntity.getBody();
+
 
 
         //return restTemplate.getForObject(URL_MAIN + URL_CURRENCY_HISTORY, FxRatesHandling.class, ccy, startDate, endDate);
     }
 
     public CcyComparator getComparatorValuesForCcy(CcyComparator currencyComparator){
+        if(currencyComparator.getCurrency1()==null || currencyComparator.getCurrency2() == null || currencyComparator.getAmount() == null)
+            return new CcyComparator();
+
         setValueToCcyAmtHandling(currencyComparator.getCurrency1().getCcy(),
                 currencyComparator.getCurrency1());
         setValueToCcyAmtHandling(currencyComparator.getCurrency2().getCcy(),
@@ -130,11 +168,12 @@ public class MainService {
     }
 
     private void setValueToCcyAmtHandling(CcyISO4217 ccy, CcyAmtHandling ccyAmt) {
-        if (ccy == CcyISO4217.EUR) {
+           if (ccy == CcyISO4217.EUR) {
             ccyAmt.setCcy(ccy);
             ccyAmt.setAmt(new BigDecimal("1"));
         } else {
             CurrencyRatesHandler currencyRatesHandler = dbRepository.findByCcy(ccy.toString());
+               System.out.println("Currency rates handler - " + currencyRatesHandler);
             ccyAmt.setAmt(currencyRatesHandler.getAmt());
             ccyAmt.setCcy(ccy);
         }
