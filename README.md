@@ -1,8 +1,8 @@
 # currency-app
-Webapp created for viewing currency ratios to EUR, currency history and currency calculations..
+Web-app created for viewing currency ratios to EUR, currency history and currency calculations..
 
 ## Project status:
-Finished
+Updating
 
 ## Technologies
 Project has to be compiled on java 11.
