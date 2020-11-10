@@ -11,10 +11,12 @@ import org.springframework.web.client.RestTemplate;
 public class CurrencyApiExampleApplication {
 
 
-    public static void main(String[] args) {
-        SpringApplication.run(CurrencyApiExampleApplication.class, args);
-    }
-
+	public static void main(String[] args) {
+		SpringApplication.run(CurrencyApiExampleApplication.class, args);
+		
+		
+	}
+	
     @Bean
     public RestTemplate getRestTemplate() {
         return new RestTemplate();

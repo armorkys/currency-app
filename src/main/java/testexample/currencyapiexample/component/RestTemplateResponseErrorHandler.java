@@ -1,37 +1,37 @@
 package testexample.currencyapiexample.component;
 
-import javassist.NotFoundException;
+import java.io.IOException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResponseErrorHandler;
 
-import java.io.IOException;
+import javassist.NotFoundException;
 
 @Component
 public class RestTemplateResponseErrorHandler implements ResponseErrorHandler {
-    @Override
-    public boolean hasError(ClientHttpResponse response) throws IOException {
-        return (
-                response.getStatusCode().series() == HttpStatus.Series.CLIENT_ERROR
-                        || response.getStatusCode().series() == HttpStatus.Series.SERVER_ERROR
-        );
-    }
 
-    @Override
-    public void handleError(ClientHttpResponse response) throws IOException {
-        if(response.getStatusCode().series() == HttpStatus.Series.SERVER_ERROR) {
-            System.out.println("Http Server Error");
-        } else if (response.getStatusCode().series() == HttpStatus.Series.CLIENT_ERROR) {
-            System.out.println("Http Client error");
-            if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
-                try {
-                    throw new NotFoundException("Not found exception");
-                } catch (NotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
+	@Override
+	public boolean hasError(ClientHttpResponse response) throws IOException {
+		return (response.getStatusCode().series() == HttpStatus.Series.CLIENT_ERROR
+				|| response.getStatusCode().series() == HttpStatus.Series.SERVER_ERROR);
+	}
+
+	@Override
+	public void handleError(ClientHttpResponse response) throws IOException {
+		if (response.getStatusCode().series() == HttpStatus.Series.SERVER_ERROR) {
+			System.out.println("Http Server Error");
+		} else if (response.getStatusCode().series() == HttpStatus.Series.CLIENT_ERROR) {
+			System.out.println("Http Client error");
+			if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
+				try {
+					throw new NotFoundException("Not found exception");
+				} catch (NotFoundException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 
 }
