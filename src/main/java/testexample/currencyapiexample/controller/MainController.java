@@ -1,93 +1,82 @@
 package testexample.currencyapiexample.controller;
 
 import java.time.LocalDate;
+import java.util.List;
 
-import javax.validation.Valid;
-import javax.xml.datatype.DatatypeConfigurationException;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import lt.lb.webservices.fxrates.CcyISO4217;
+import lt.lb.webservices.fxrates.FxRateHandling;
 import lt.lb.webservices.fxrates.FxRatesHandling;
-import testexample.currencyapiexample.model.CcyComparator;
-import testexample.currencyapiexample.model.DateHistoryTemplate;
-import testexample.currencyapiexample.service.CcyComparatorService;
 import testexample.currencyapiexample.service.FxRatesService;
 
-@Controller
+@RestController
 public class MainController {
 
-	@Autowired
-	private CcyComparatorService comparatorService;
-	
-	@Autowired
-	private FxRatesService fxRatesService;
+    private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
-	@GetMapping("/")
-	public String getCurrentRatesList(Model model) throws DatatypeConfigurationException {
-		model.addAttribute("currencyList", fxRatesService.getCurrentCurrencyRates());
-		return "index";
-	}
 
-	@GetMapping("/getCurrencyHistory/{ccy}")
-	public String getCurrencyHistory(@PathVariable(value = "ccy") CcyISO4217 ccy, Model model) {
-		LocalDate endDate = LocalDate.now();
-		LocalDate startDate = endDate.minusYears(1);
-		FxRatesHandling currencyRatesHistory = fxRatesService.getCurrencyHistory(ccy, startDate, endDate);
-		DateHistoryTemplate formTemplate = new DateHistoryTemplate();
-		formTemplate.setCcy(ccy);
-		model.addAttribute("dateInputTemplate", formTemplate);
-		model.addAttribute("currencyRatesList", currencyRatesHistory.getFxRate());
-		return "currency-history";
-	}
+    @Autowired
+    private FxRatesService fxRatesService;
 
-	@PostMapping("/getCurrencyHistoryCustom/{ccy}")
-	public String getCurrencyHistoryCustom(@PathVariable(value = "ccy") CcyISO4217 ccy,
-			@Valid @ModelAttribute("dateInputTemplate") DateHistoryTemplate formTemplate, BindingResult bindingResult,
-			Model model) {
-		if (bindingResult.hasErrors()) {
-			LocalDate endDate = LocalDate.now();
-			LocalDate startDate = endDate.minusYears(1);
-			FxRatesHandling currencyRatesHistory = fxRatesService.getCurrencyHistory(ccy, startDate, endDate);
-			model.addAttribute("currencyRatesList", currencyRatesHistory.getFxRate());
-		} else {
-			FxRatesHandling currencyRatesHistory = fxRatesService.getCurrencyHistory(formTemplate.getCcy(),
-					formTemplate.getStartDate(), formTemplate.getEndDate());
-			model.addAttribute("currencyRatesList", currencyRatesHistory.getFxRate());
-		}
-		model.addAttribute("dateInputTemplate", formTemplate);
-		return "currency-history";
-	}
+    @GetMapping("/getCurrent")
+    public FxRatesHandling getCurrentRatesList() {
+        logger.info("\nCalled getCurrent\n");
+        FxRatesHandling fxRates = fxRatesService.getCurrentCurrencyRates();
+        //showReturn(fxRates);
+        return fxRates;
+    }
 
-	@GetMapping("/convertCurrency")
-	public String convertCurrencyGet(Model model) throws DatatypeConfigurationException {
-		model.addAttribute("answerActive", Boolean.FALSE);
-		model.addAttribute("ccyComparatorAns", new CcyComparator());
-		model.addAttribute("currencyNameList", fxRatesService.getCurrentCurrencyRates());
-		model.addAttribute("ccyComparator", new CcyComparator());
-		return "convert-currency";
-	}
+    @GetMapping("/getCurrencyHistory/{ccy}")
+    public FxRatesHandling getCurrencyHistory(
+            @PathVariable(value = "ccy") String ccy) {
+        CcyISO4217 currencyName = CcyISO4217.fromValue(ccy);
+        LocalDate dateTo = LocalDate.now();
+        LocalDate dateFrom = dateTo.minusYears(1);
 
-	@PostMapping("/convertCurrency")
-	public String convertCurrencyPost(@Valid @ModelAttribute("ccyComparator") CcyComparator currencyComparator,
-			BindingResult bindingResult, Model model) throws DatatypeConfigurationException {
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("answerActive", Boolean.FALSE);
-			model.addAttribute("ccyComparatorAns", new CcyComparator());
-		} else {
-			model.addAttribute("answerActive", Boolean.TRUE);
-			model.addAttribute("ccyComparatorAns", comparatorService.getComparatorValuesForCcy(currencyComparator));
-		}
-		model.addAttribute("currencyNameList", fxRatesService.getCurrentCurrencyRates());
-		model.addAttribute("ccyComparator", new CcyComparator());
-		return "convert-currency";
-	}
+        logger.info("\nCalled getCurrentHistory for " + ccy +
+                " Date from - " + dateFrom +
+                " Date to - " + dateTo);
+
+        FxRatesHandling fxRates = fxRatesService.getCurrencyHistory(currencyName, dateFrom, dateTo);
+        // showReturn(fxRates);
+        return fxRates;
+    }
+
+    @GetMapping("/getCurrencyHistoryCustom/{ccy}+from={dateFrom}+dateTo{dateTo}")
+    public FxRatesHandling getCurrencyHistoryCustom(
+            @PathVariable(value = "ccy") String ccy,
+            @PathVariable(value = "dateFrom") String startDate,
+            @PathVariable(value = "dateTo") String endDate) {
+        logger.info("\nCalled getCurrentHistory for " + ccy +
+                " Date from - " + startDate +
+                " Date to - " + endDate);
+        CcyISO4217 currencyName = CcyISO4217.fromValue(ccy);
+        LocalDate dateFrom = LocalDate.parse(startDate);
+        LocalDate dateTo = LocalDate.parse(endDate);
+        FxRatesHandling fxRates = fxRatesService.getCurrencyHistory(currencyName, dateFrom, dateTo);
+       // showReturn(fxRates);
+        return fxRates;
+    }
+
+    @GetMapping("/getCurrencyList")
+    public List<String> getCurrencyList() {
+        logger.info("Getting currency list");
+        List<String> curList = fxRatesService.getCurrencyList();
+        logger.info("Currency name list size - " + curList);
+        return curList;
+    }
+
+    private void showReturn(FxRatesHandling fxRates) {
+        logger.info("\nSize - " + fxRates.getFxRate().size());
+        for (FxRateHandling f : fxRates.getFxRate()) {
+            logger.info("Name - " + f.getCcyAmt().get(1).getCcy() + " Value - " + f.getCcyAmt().get(1).getAmt() + " Date - " + f.getDt());
+        }
+    }
 
 }

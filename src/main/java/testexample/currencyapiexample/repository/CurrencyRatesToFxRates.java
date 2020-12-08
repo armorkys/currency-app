@@ -14,7 +14,7 @@ import lt.lb.webservices.fxrates.FxRateTypeHandling;
 import testexample.currencyapiexample.model.CurrencyRatesHandler;
 
 @Service
-public class FxRatesToCurrencyRates {
+public class CurrencyRatesToFxRates {
 
 	// converting values from db to main object handlers
 	public static FxRateHandling convertCurrencyRatesHandlerToFxRateHandler(CurrencyRatesHandler currencyRates)

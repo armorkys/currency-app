@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import lt.lb.webservices.fxrates.FxRatesHandling;
 import testexample.currencyapiexample.repository.FxStorage;
-import testexample.currencyapiexample.service.CcyComparatorService;
 import testexample.currencyapiexample.service.FxClient;
 
 @Component

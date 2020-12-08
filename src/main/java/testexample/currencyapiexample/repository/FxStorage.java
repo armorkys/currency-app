@@ -51,12 +51,18 @@ public class FxStorage {
 	}
 
 	/** initializeDB must be called before this **/
-	public FxRatesHandling getCurrentCurrencyRates() throws DatatypeConfigurationException {
+	public FxRatesHandling getCurrentCurrencyRates(){
+
 		Iterable<CurrencyRatesHandler> iterableList = dbRepository.findAll();
 		FxRatesHandling fxRates = new FxRatesHandling();
+
 		if(iterableList!=null) {
+			try {
 		for (CurrencyRatesHandler currencyRates : iterableList) {
-			fxRates.getFxRate().add(FxRatesToCurrencyRates.convertCurrencyRatesHandlerToFxRateHandler(currencyRates));
+				fxRates.getFxRate().add(CurrencyRatesToFxRates.convertCurrencyRatesHandlerToFxRateHandler(currencyRates));
+		}
+		} catch (DatatypeConfigurationException e) {
+			e.printStackTrace();
 		}
 		}
 		return fxRates;

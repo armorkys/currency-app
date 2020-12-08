@@ -1,6 +1,7 @@
 package testexample.currencyapiexample.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -30,8 +31,8 @@ public class FxRatesService {
 		fxStorage.initializeDb(fxRates);
 	}
 	
-	public List<FxRateHandling> getCurrentCurrencyRates() throws DatatypeConfigurationException {
-		return fxStorage.getCurrentCurrencyRates().getFxRate();
+	public FxRatesHandling getCurrentCurrencyRates(){
+		return fxStorage.getCurrentCurrencyRates();
 		
 	}
 
@@ -39,6 +40,14 @@ public class FxRatesService {
 		return fxClient.getCurrencyHistory(ccy, startDate, endDate);
 	}
 
-	
-	
+
+	public List<String> getCurrencyList() {
+		FxRatesHandling fxRates = fxStorage.getCurrentCurrencyRates();
+
+		List<String> ccyList = new ArrayList<>();
+		for(FxRateHandling fx:fxRates.getFxRate()){
+			ccyList.add(fx.getCcyAmt().get(1).getCcy().toString());
+		}
+		return ccyList;
+	}
 }
