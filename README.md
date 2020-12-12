@@ -2,7 +2,7 @@
 Web-app created for viewing currency ratios to EUR, currency history and currency calculations..
 
 ## Project status:
-Updating
+Paused
 
 ## Technologies
 Project has to be compiled on java 11.
